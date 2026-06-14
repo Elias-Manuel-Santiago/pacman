@@ -22,15 +22,10 @@ export class Pacman {
      */
     constructor(container, startX, startY) {
         // ── Estado lógico ─────────────────────────────────────
-
-        /** Posición actual en la grilla (columna) */
-        this.gridX = startX;
-        /** Posición actual en la grilla (fila) */
-        this.gridY = startY;
+        this.posicion = { x: startX, y: startY};
 
         /** Posición en el tick anterior, usada para lerp en render() */
-        this.prevX = startX;
-        this.prevY = startY;
+        this.prevPos =  { x: startX, y: startY};
 
         /** Dirección en la que Pac-Man se está moviendo actualmente */
         this.direction = { x: 1, y: 0 }; // empieza mirando a la derecha
@@ -46,6 +41,7 @@ export class Pacman {
         // TODO: reemplazar por Sprite/AnimatedSprite cuando haya assets.
         this.graphics = new Graphics();
         container.addChild(this.graphics);
+        this.graphics.zIndex = 0;
 
         // Posicionar en el punto de inicio y dibujar la forma inicial
         this.graphics.x = _cellCenter(startX);
@@ -70,28 +66,30 @@ export class Pacman {
      */
     move(maze) {
         // Guardar posición actual como "anterior" para la interpolación del render
-        this.prevX = this.gridX;
-        this.prevY = this.gridY;
+        this.prevPos.x = this.posicion.x;
+        this.prevPos.y = this.posicion.y;
+
 
         // Intentar girar a la dirección deseada si la celda vecina lo permite
-        const turnX = this.gridX + this.nextDirection.x;
-        const turnY = this.gridY + this.nextDirection.y;
+        const turnX = this.posicion.x + this.nextDirection.x;
+        const turnY = this.posicion.y + this.nextDirection.y;
         if (maze.isWalkable(turnX, turnY)) {
             this.direction = { ...this.nextDirection };
         }
 
         // Calcular la celda destino en la dirección actual
-        let newX = this.gridX + this.direction.x;
-        let newY = this.gridY + this.direction.y;
+        let newX = this.posicion.x + this.direction.x;
+        let newY = this.posicion.y + this.direction.y;
 
         // Túnel horizontal: salir por un lado y entrar por el otro
-        if (newX < 0)     newX = COLS - 1;
+        if (newX < 0) newX = COLS - 1;
         if (newX >= COLS) newX = 0;
 
         // Solo avanzar si la celda destino es caminable
         if (maze.isWalkable(newX, newY)) {
-            this.gridX = newX;
-            this.gridY = newY;
+
+            this.posicion.x = newX;
+            this.posicion.y = newY;
         }
     }
 
@@ -104,10 +102,10 @@ export class Pacman {
      */
     render(progress) {
         // Si Pac-Man cruzó el túnel, no interpolar (evita deslizamiento visual)
-        const wrapping = Math.abs(this.prevX - this.gridX) > COLS / 2;
+        const wrapping = Math.abs(this.prevPos.x - this.posicion.x) > COLS / 2;
 
-        const interpX = wrapping ? this.gridX : lerp(this.prevX, this.gridX, progress);
-        const interpY = lerp(this.prevY, this.gridY, progress);
+        const interpX = wrapping ? this.posicion.x : lerp(this.prevPos.x, this.posicion.x, progress);
+        const interpY = lerp(this.prevPos.y, this.posicion.y, progress);
 
         this.graphics.x = _cellCenter(interpX);
         this.graphics.y = _cellCenterY(interpY);
@@ -122,13 +120,13 @@ export class Pacman {
      * @param {number} progress - 0 a 1, controla la apertura de la boca
      */
     _redraw(progress) {
-        const radius   = CELL_SIZE * 0.45;
+        const radius = CELL_SIZE * 0.45;
         const maxMouth = Math.PI * 0.25; // apertura máxima: 45°
 
         // Onda senoidal: la boca abre y cierra suavemente en cada tick.
         // Math.max(0.05) evita que el ángulo sea exactamente 0 (canvas lo trata
         // como sin arco y solo dibujaría una línea en lugar del círculo completo).
-        const mouth    = Math.max(0.05, maxMouth * Math.abs(Math.sin(progress * Math.PI)));
+        const mouth = Math.max(0.05, maxMouth * Math.abs(Math.sin(progress * Math.PI)));
 
         // Ángulo de rotación según la dirección actual de movimiento
         const rotation = Math.atan2(this.direction.y, this.direction.x);
@@ -152,11 +150,9 @@ export class Pacman {
      * @param {number} y - Fila
      */
     reset(x, y) {
-        this.gridX = x;
-        this.gridY = y;
-        this.prevX = x;
-        this.prevY = y;
-        this.direction     = { x: 1, y: 0 };
+        this.posicion = { x:x, y:y };
+        this.prevPos = { x:x, y:y };
+        this.direction = { x: 1, y: 0 };
         this.nextDirection = { x: 1, y: 0 };
 
         this.graphics.x = _cellCenter(x);

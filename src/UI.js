@@ -7,7 +7,7 @@
 //   • Overlay de Victoria (todos los orbes recolectados)
 
 import { Container, Graphics, Text } from 'pixi.js';
-import { CANVAS_WIDTH, CANVAS_HEIGHT, UI_HEIGHT } from './Grid.js';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, UI_HEIGHT, CELL_SIZE } from './Grid.js';
 
 export class UI {
     /**
@@ -17,6 +17,7 @@ export class UI {
         // ── HUD superior ──────────────────────────────────────
         this.hudContainer = new Container();
         stage.addChild(this.hudContainer);
+        this.hudContainer.zIndex = 2;
 
         // Fondo de la barra
         const hudBg = new Graphics();
@@ -24,7 +25,25 @@ export class UI {
         hudBg.fill(0x1a1a2e);
         this.hudContainer.addChild(hudBg);
 
+
+        // Barras negras para cubrir al pacman cuando pasa por el portal
+        this.leftCover = new Graphics();
+        this.leftCover.rect(0, UI_HEIGHT - 3, CELL_SIZE, CANVAS_HEIGHT - UI_HEIGHT + 2);
+        this.leftCover.fill(0x000000);
+        this.hudContainer.addChild(this.leftCover);
+
+        this.rightCover = new Graphics();
+        this.rightCover.rect(CANVAS_WIDTH - CELL_SIZE, UI_HEIGHT - 3, CELL_SIZE, CANVAS_HEIGHT - UI_HEIGHT + 2);
+        this.rightCover.fill(0x000000);
+        this.hudContainer.addChild(this.rightCover);
+
+
+
+
+
+
         // Línea separadora
+
         const separator = new Graphics();
         separator.rect(0, UI_HEIGHT - 2, CANVAS_WIDTH, 2);
         separator.fill(0xffff00);
@@ -183,7 +202,7 @@ export class UI {
 
         // Mostrar un mini Pac-Man por cada vida restante
         const iconSize = 10;
-        const spacing  = 26;
+        const spacing = 26;
 
         for (let i = 0; i < lives; i++) {
             const icon = new Graphics();

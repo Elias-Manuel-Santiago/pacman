@@ -21,12 +21,14 @@
 // Los vecinos de (x, y) son los cuatro cardinales: (x±1, y) y (x, y±1).
 
 import { Graphics } from 'pixi.js';
-import { CELL_SIZE, UI_HEIGHT, COLS, GHOST_STATE, lerp } from './Grid.js';
+import { CELL_SIZE, UI_HEIGHT, COLS, ROWS, GHOST_STATE, lerp } from './Grid.js';
+import { Maze } from './Maze.js'
+import PF from 'pathfinding'
 
 /** Color de los fantasmas cuando están asustados */
 const COLOR_FRIGHTENED = 0x2222ff;
 /** Color de los fantasmas cuando están comidos (solo se ven los ojos) */
-const COLOR_EATEN      = 0x444444;
+const COLOR_EATEN = 0x444444;
 
 export class Ghost {
     /**
@@ -38,19 +40,17 @@ export class Ghost {
      * @param {string} name    - Nombre del fantasma (informativo / debug)
      */
     constructor(container, id, startX, startY, color, name) {
-        this.id    = id;
-        this.name  = name;
+        this.id = id;
+        this.name = name;
         this.color = color;
 
         // ── Estado lógico ─────────────────────────────────────
 
         /** Posición actual en la grilla */
-        this.gridX = startX;
-        this.gridY = startY;
+        this.posicion = { x: startX, y: startY };
 
         /** Posición del tick anterior (para interpolación visual) */
-        this.prevX = startX;
-        this.prevY = startY;
+        this.prevPos = { x: startX, y: startY };
 
         /** Dirección de movimiento actual */
         this.direction = { x: 0, y: -1 }; // empieza mirando arriba
@@ -72,6 +72,18 @@ export class Ghost {
         this.graphics.y = _cellCenterY(startY);
         this._redraw();
     }
+
+
+
+    pathfinding(posObjetivo, grid) {
+        const pathfinder = new PF.AStarFinder({
+            allowDiagonals: false,
+            dontCrossCorners: true,
+        });
+        const path = pathfinder.findPath(13, 11, 12, 12, grid);
+        console.log(grid);
+    }
+
 
     // ── Lógica de movimiento ──────────────────────────────────
 
@@ -121,8 +133,7 @@ export class Ghost {
      */
     move(maze, pacman) {
         // Guardar posición anterior para la interpolación visual
-        this.prevX = this.gridX;
-        this.prevY = this.gridY;
+        this.prevPos = this.posicion;
 
         // ── PATHFINDING PENDIENTE ────────────────────────────
         // Los fantasmas no se mueven por ahora.
@@ -176,10 +187,10 @@ export class Ghost {
      */
     render(progress) {
         // Si el fantasma cruzó el túnel, no interpolar (sin deslizamiento visual)
-        const wrapping = Math.abs(this.prevX - this.gridX) > COLS / 2;
+        const wrapping = Math.abs(this.prevPos.x - this.posicion.x) > COLS / 2;
 
-        const interpX = wrapping ? this.gridX : lerp(this.prevX, this.gridX, progress);
-        const interpY = lerp(this.prevY, this.gridY, progress);
+        const interpX = wrapping ? this.posicion.x : lerp(this.prevPos.x, this.posicion.x, progress);
+        const interpY = lerp(this.prevPos.y, this.posicion.y, progress);
 
         this.graphics.x = _cellCenter(interpX);
         this.graphics.y = _cellCenterY(interpY);
@@ -213,9 +224,9 @@ export class Ghost {
         this.graphics.lineTo(r, r * 0.55);
         // Tres "patas" zigzag en la parte inferior
         const legW = (r * 2) / 3;
-        this.graphics.arc(r - legW / 2,       r * 0.55, legW / 2, 0,        Math.PI, false);
-        this.graphics.arc(r - legW - legW / 2, r * 0.55, legW / 2, 0,        Math.PI, false);
-        this.graphics.arc(-r + legW / 2,       r * 0.55, legW / 2, 0,        Math.PI, false);
+        this.graphics.arc(r - legW / 2, r * 0.55, legW / 2, 0, Math.PI, false);
+        this.graphics.arc(r - legW - legW / 2, r * 0.55, legW / 2, 0, Math.PI, false);
+        this.graphics.arc(-r + legW / 2, r * 0.55, legW / 2, 0, Math.PI, false);
         // Subida por el lado izquierdo
         this.graphics.lineTo(-r, 0);
         this.graphics.closePath();
@@ -226,18 +237,18 @@ export class Ghost {
             // Ojos tristes: dos puntos blancos pequeños
             this.graphics.circle(-r * 0.32, -r * 0.1, r * 0.14);
             this.graphics.fill(0xffffff);
-            this.graphics.circle( r * 0.32, -r * 0.1, r * 0.14);
+            this.graphics.circle(r * 0.32, -r * 0.1, r * 0.14);
             this.graphics.fill(0xffffff);
         } else {
             // Ojos normales: círculo blanco con pupila azul oscuro
             this.graphics.circle(-r * 0.32, -r * 0.15, r * 0.22);
             this.graphics.fill(0xffffff);
-            this.graphics.circle( r * 0.32, -r * 0.15, r * 0.22);
+            this.graphics.circle(r * 0.32, -r * 0.15, r * 0.22);
             this.graphics.fill(0xffffff);
 
             this.graphics.circle(-r * 0.28, -r * 0.12, r * 0.11);
             this.graphics.fill(0x000088);
-            this.graphics.circle( r * 0.36, -r * 0.12, r * 0.11);
+            this.graphics.circle(r * 0.36, -r * 0.12, r * 0.11);
             this.graphics.fill(0x000088);
         }
     }
@@ -250,12 +261,10 @@ export class Ghost {
      * @param {number} y - Fila
      */
     reset(x, y) {
-        this.gridX = x;
-        this.gridY = y;
-        this.prevX = x;
-        this.prevY = y;
+        this.posicion = { x: x, y: y };
+        this.prevPos = { x: x, y: y };
         this.direction = { x: 0, y: -1 };
-        this.state     = (y <= 12) ? GHOST_STATE.SCATTER : GHOST_STATE.HOUSE;
+        this.state = (y <= 12) ? GHOST_STATE.SCATTER : GHOST_STATE.HOUSE;
 
         if (this._frightenTimer) {
             clearTimeout(this._frightenTimer);

@@ -12,7 +12,7 @@
 //   - update() → render, se ejecuta cada frame con progress [0,1)
 
 import { Graphics } from 'pixi.js';
-import { Maze, PACMAN_START, GHOST_CONFIGS } from './Maze.js';
+import { Maze, PACMAN_START, GHOST_CONFIGS} from './Maze.js';
 import { Pacman }                             from './Pacman.js';
 import { Ghost }                              from './Ghost.js';
 import { UI }                                 from './UI.js';
@@ -33,6 +33,8 @@ const STATE = {
     GAME_OVER: 'game_over',
     WIN:       'win',
 };
+import PF from 'pathfinding'
+
 
 export class Game {
     /**
@@ -80,6 +82,8 @@ export class Game {
 
         // El fondo negro cubre toda el área de juego
         this._createBackground();
+
+        this.app.stage.sortableChildren = true;
 
         // La UI se crea antes que las entidades para que quede detrás visualmente
         this.ui = new UI(this.app.stage);
@@ -162,7 +166,7 @@ export class Game {
 
         // Ejecutar todos los ticks pendientes
         // (puede haber más de uno si el frame fue muy lento)
-        while (this.timeSinceLastMove >= MOVE_INTERVAL) {
+        while (this.timeSinceLastMove > MOVE_INTERVAL) {
             this.timeSinceLastMove -= MOVE_INTERVAL;
             this._tick();
             if (this.state !== STATE.PLAYING) return;
@@ -181,14 +185,18 @@ export class Game {
      * Se ejecuta exactamente una vez cada MOVE_INTERVAL ms.
      */
     _tick() {
+        let start = false;
         // Aplicar la dirección pedida por el jugador
         this.pacman.setNextDirection(this.inputDirection);
-
         // Mover Pac-Man un paso
         this.pacman.move(this.maze);
 
+        this.ghosts[0].pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone());
+        console.log(this.maze.grid); 
+
+
         // Recolectar orbe o pellet en la celda actual de Pac-Man
-        const collected = this.maze.collectAt(this.pacman.gridX, this.pacman.gridY);
+        const collected = this.maze.collectAt(this.pacman.posicion);
         if (collected !== null) {
             this._onCollect(collected);
         }
@@ -245,7 +253,7 @@ export class Game {
      * @param {Ghost} ghost
      */
     _overlaps(pacman, ghost) {
-        return ghost.gridX === pacman.gridX && ghost.gridY === pacman.gridY;
+        return ghost.posicion.x === pacman.posicion.x && ghost.posicion.y === pacman.posicion.y;
     }
 
     /**

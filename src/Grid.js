@@ -5,23 +5,24 @@
 // Cambiar CELL_SIZE reescala el juego entero sin tocar otra cosa.
 // Cambiar COLS/ROWS requiere rediseñar el laberinto en Maze.js.
 
-/** Tamaño de cada celda en píxeles */
-export const CELL_SIZE = 20;
-
 /** Cantidad de columnas del laberinto */
-export const COLS = 28;
-
+export const COLS = 30;
 /** Cantidad de filas del laberinto */
 export const ROWS = 31;
 
 /** Alto de la barra HUD en píxeles (encima del área de juego) */
 export const UI_HEIGHT = 50;
 
+/** Alto total del canvas (laberinto + HUD) */
+export const CANVAS_HEIGHT = window.innerHeight;   // 670px
+
+/** Tamaño de cada celda en píxeles */
+export const CELL_SIZE = window.innerHeight / ROWS - 3;
+
 /** Ancho total del canvas */
 export const CANVAS_WIDTH  = CELL_SIZE * COLS;               // 560px
 
-/** Alto total del canvas (laberinto + HUD) */
-export const CANVAS_HEIGHT = CELL_SIZE * ROWS + UI_HEIGHT;   // 670px
+
 
 /**
  * Milisegundos entre cada tick de lógica.
