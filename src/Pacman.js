@@ -22,10 +22,10 @@ export class Pacman {
      */
     constructor(container, startX, startY) {
         // ── Estado lógico ─────────────────────────────────────
-        this.posicion = { x: startX, y: startY};
+        this.posicion = { x: startX, y: startY };
 
         /** Posición en el tick anterior, usada para lerp en render() */
-        this.prevPos =  { x: startX, y: startY};
+        this.prevPos = { x: startX, y: startY };
 
         /** Dirección en la que Pac-Man se está moviendo actualmente */
         this.direction = { x: 1, y: 0 }; // empieza mirando a la derecha
@@ -41,7 +41,7 @@ export class Pacman {
         // TODO: reemplazar por Sprite/AnimatedSprite cuando haya assets.
         this.graphics = new Graphics();
         container.addChild(this.graphics);
-        this.graphics.zIndex = 0;
+        this.graphics.zIndex = 3;
 
         // Posicionar en el punto de inicio y dibujar la forma inicial
         this.graphics.x = _cellCenter(startX);
@@ -150,8 +150,8 @@ export class Pacman {
      * @param {number} y - Fila
      */
     reset(x, y) {
-        this.posicion = { x:x, y:y };
-        this.prevPos = { x:x, y:y };
+        this.posicion = { x: x, y: y };
+        this.prevPos = { x: x, y: y };
         this.direction = { x: 1, y: 0 };
         this.nextDirection = { x: 1, y: 0 };
 
@@ -162,6 +162,14 @@ export class Pacman {
 
     destroy() {
         this.graphics.destroy();
+    }
+
+    // En Pacman.js y Ghost.js, agregar un getter:
+    getInterpPos(progress) {
+        const wrapping = Math.abs(this.prevPos.x - this.posicion.x) > COLS / 2;
+        const x = wrapping ? this.posicion.x : lerp(this.prevPos.x, this.posicion.x, progress);
+        const y = lerp(this.prevPos.y, this.posicion.y, progress);
+        return { x, y };
     }
 }
 

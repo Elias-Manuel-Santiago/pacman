@@ -138,6 +138,8 @@ export class Maze {
         // Las paredes van primero (detrás de orbes y personajes)
         container.addChild(this.wallGraphics);
         container.addChild(this.orbGraphics);
+        this.wallGraphics.zIndex = 2;
+        this.orbGraphics.zIndex = 2;
 
         this._drawWalls();
         this._drawOrbs();

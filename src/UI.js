@@ -17,7 +17,7 @@ export class UI {
         // ── HUD superior ──────────────────────────────────────
         this.hudContainer = new Container();
         stage.addChild(this.hudContainer);
-        this.hudContainer.zIndex = 2;
+        this.hudContainer.zIndex = 10;
 
         // Fondo de la barra
         const hudBg = new Graphics();
@@ -87,6 +87,7 @@ export class UI {
         this.gameOverContainer = new Container();
         this.gameOverContainer.visible = false;
         stage.addChild(this.gameOverContainer);
+        this.gameOverContainer.zIndex = 10;
 
         // Fondo semitransparente
         const gameOverBg = new Graphics();

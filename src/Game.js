@@ -21,6 +21,7 @@ import {
     CANVAS_HEIGHT,
     UI_HEIGHT,
     MOVE_INTERVAL,
+    MOVE_INTERVAL_GHOST,
     FRIGHTEN_DURATION,
     GHOST_STATE,
     CELL,
@@ -45,6 +46,7 @@ export class Game {
 
         // Acumulador de tiempo para el tick de lógica (ver _update)
         this.timeSinceLastMove = 0;
+        this.timeSinceLastMoveGhost = 0;
 
         // Dirección pedida por el teclado; se aplica en el próximo tick
         this.inputDirection = { x: 0, y: 0 };
@@ -163,24 +165,52 @@ export class Game {
         if (this.state !== STATE.PLAYING) return;
 
         this.timeSinceLastMove += ticker.deltaMS;
+        this.timeSinceLastMoveGhost += ticker.deltaMS;
 
-        // Ejecutar todos los ticks pendientes
-        // (puede haber más de uno si el frame fue muy lento)
-        while (this.timeSinceLastMove > MOVE_INTERVAL) {
-            this.timeSinceLastMove -= MOVE_INTERVAL;
-            this._tick();
+        while (this.timeSinceLastMove > MOVE_INTERVAL || this.timeSinceLastMoveGhost > MOVE_INTERVAL_GHOST) {
+            if (this.timeSinceLastMove > MOVE_INTERVAL) {
+                this.timeSinceLastMove -= MOVE_INTERVAL;
+                this._tick(); // ahora SIN chequeo de colisión acá
+            }
+            if (this.timeSinceLastMoveGhost > MOVE_INTERVAL_GHOST) {
+                this.timeSinceLastMoveGhost -= MOVE_INTERVAL_GHOST;
+                this._tickGhost();
+            }
             if (this.state !== STATE.PLAYING) return;
         }
 
-        // Fracción completada del tick actual: 0 = recién empezó, ~1 = casi termina
         const progress = this.timeSinceLastMove / MOVE_INTERVAL;
+        const progressGhost = this.timeSinceLastMoveGhost / MOVE_INTERVAL_GHOST;
 
         this.pacman.render(progress);
-        this.ghosts[0].render(progress);
+        this.ghosts[0].render(progressGhost);
+
+        // Chequeo visual de colisión, cada frame
+        this._checkVisualCollisions(progress, progressGhost);
 
         //for (const ghost of this.ghosts) ghost.render(progress);
     }
 
+
+    _checkVisualCollisions(progressPacman, progressGhost) {
+        const pacmanPos = this.pacman.getInterpPos(progressPacman);
+        for (const ghost of this.ghosts) {
+            const ghostPos = ghost.getInterpPos(progressGhost);
+            const dx = pacmanPos.x - ghostPos.x;
+            const dy = pacmanPos.y - ghostPos.y;
+            // Cuadratica para calcular diagonales
+            const distSquared= dx * dx + dy * dy;
+
+            // Umbral: por ejemplo, menos de media celda de distancia
+            const threshold = 0.5;
+
+            // Como en la cuadratica no hicimos raiz, entonces tenemos que hacer threshold al cuadrado
+            if (distSquared < threshold * threshold) {
+                this._resolveCollision(ghost);
+                if (this.state !== STATE.PLAYING) return;
+            }
+        }
+    }
     /**
      * Un paso de lógica completo: mover personajes, recolectar orbes,
      * evaluar colisiones, verificar condiciones de fin.
@@ -193,8 +223,7 @@ export class Game {
         // Mover Pac-Man un paso
         this.pacman.move(this.maze);
 
-        this.ghosts[0].pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone());
-        this.ghosts[0].move();
+
 
         // Recolectar orbe o pellet en la celda actual de Pac-Man
         const collected = this.maze.collectAt(this.pacman.posicion);
@@ -210,9 +239,9 @@ export class Game {
         // Evaluar colisiones Pac-Man ↔ fantasmas
         for (const ghost of this.ghosts) {
             if (this._overlaps(this.pacman, ghost)) {
-                this._resolveCollision(ghost);
+                //this._resolveCollision(ghost);
                 // Salir del tick si el juego terminó o Pac-Man murió
-                if (this.state !== STATE.PLAYING) return;
+                //if (this.state !== STATE.PLAYING) return;
             }
         }
 
@@ -221,6 +250,12 @@ export class Game {
             this.state = STATE.WIN;
             this.ui.showWin(this.score);
         }
+
+    }
+
+    _tickGhost() {
+        this.ghosts[0].pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone());
+        this.ghosts[0].move();
     }
 
     // ── Eventos del juego ─────────────────────────────────────

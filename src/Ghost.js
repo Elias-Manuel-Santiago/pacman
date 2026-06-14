@@ -69,6 +69,7 @@ export class Ghost {
         // TODO: reemplazar por Sprite/AnimatedSprite cuando haya assets.
         this.graphics = new Graphics();
         container.addChild(this.graphics);
+        this.graphics.zIndex = 3;
 
         this.graphics.x = _cellCenter(startX);
         this.graphics.y = _cellCenterY(startY);
@@ -155,7 +156,7 @@ export class Ghost {
 
         this.posicion.x = newX;
         this.posicion.y = newY;
-        
+
 
     }
 
@@ -301,6 +302,13 @@ export class Ghost {
         if (this._frightenTimer) clearTimeout(this._frightenTimer);
         this.graphics.destroy();
     }
+    // En Pacman.js y Ghost.js, agregar un getter:
+    getInterpPos(progress) {
+        const wrapping = Math.abs(this.prevPos.x - this.posicion.x) > COLS / 2;
+        const x = wrapping ? this.posicion.x : lerp(this.prevPos.x, this.posicion.x, progress);
+        const y = lerp(this.prevPos.y, this.posicion.y, progress);
+        return { x, y };
+    }
 }
 
 // ── Helpers privados del módulo ───────────────────────────────
@@ -312,3 +320,4 @@ function _cellCenter(gridX) {
 function _cellCenterY(gridY) {
     return gridY * CELL_SIZE + CELL_SIZE / 2 + UI_HEIGHT;
 }
+
