@@ -12,10 +12,10 @@
 //   - update() → render, se ejecuta cada frame con progress [0,1)
 
 import { Graphics } from 'pixi.js';
-import { Maze, PACMAN_START, GHOST_CONFIGS} from './Maze.js';
-import { Pacman }                             from './Pacman.js';
-import { Ghost }                              from './Ghost.js';
-import { UI }                                 from './UI.js';
+import { Maze, PACMAN_START, GHOST_CONFIGS } from './Maze.js';
+import { Pacman } from './Pacman.js';
+import { Ghost } from './Ghost.js';
+import { UI } from './UI.js';
 import {
     CANVAS_WIDTH,
     CANVAS_HEIGHT,
@@ -29,9 +29,9 @@ import {
 
 // Estados posibles del juego
 const STATE = {
-    PLAYING:   'playing',
+    PLAYING: 'playing',
     GAME_OVER: 'game_over',
-    WIN:       'win',
+    WIN: 'win',
 };
 import PF from 'pathfinding'
 
@@ -73,12 +73,12 @@ export class Game {
     _start() {
         this._clearScene();
 
-        this.state                 = STATE.PLAYING;
-        this.score                 = 0;
-        this.lives                 = 3;
-        this.timeSinceLastMove     = 0;
+        this.state = STATE.PLAYING;
+        this.score = 0;
+        this.lives = 3;
+        this.timeSinceLastMove = 0;
         this.ghostsEatenThisPellet = 0;
-        this.inputDirection        = { x: 0, y: 0 };
+        this.inputDirection = { x: 0, y: 0 };
 
         // El fondo negro cubre toda el área de juego
         this._createBackground();
@@ -106,16 +106,16 @@ export class Game {
     /** Destruye todas las entidades activas y limpia el stage */
     _clearScene() {
         if (this.background) this.background.destroy();
-        if (this.maze)       this.maze.destroy();
-        if (this.pacman)     this.pacman.destroy();
-        if (this.ghosts)     this.ghosts.forEach((g) => g.destroy());
-        if (this.ui)         this.ui.destroy();
+        if (this.maze) this.maze.destroy();
+        if (this.pacman) this.pacman.destroy();
+        if (this.ghosts) this.ghosts.forEach((g) => g.destroy());
+        if (this.ui) this.ui.destroy();
 
         this.background = null;
-        this.maze       = null;
-        this.pacman     = null;
-        this.ghosts     = [];
-        this.ui         = null;
+        this.maze = null;
+        this.pacman = null;
+        this.ghosts = [];
+        this.ui = null;
     }
 
     /** Dibuja el fondo negro del área de juego */
@@ -143,10 +143,10 @@ export class Game {
             }
 
             switch (e.code) {
-                case 'ArrowLeft':  case 'KeyA': this.inputDirection = { x: -1, y:  0 }; break;
-                case 'ArrowRight': case 'KeyD': this.inputDirection = { x:  1, y:  0 }; break;
-                case 'ArrowUp':    case 'KeyW': this.inputDirection = { x:  0, y: -1 }; break;
-                case 'ArrowDown':  case 'KeyS': this.inputDirection = { x:  0, y:  1 }; break;
+                case 'ArrowLeft': case 'KeyA': this.inputDirection = { x: -1, y: 0 }; break;
+                case 'ArrowRight': case 'KeyD': this.inputDirection = { x: 1, y: 0 }; break;
+                case 'ArrowUp': case 'KeyW': this.inputDirection = { x: 0, y: -1 }; break;
+                case 'ArrowDown': case 'KeyS': this.inputDirection = { x: 0, y: 1 }; break;
             }
         });
     }
@@ -176,7 +176,9 @@ export class Game {
         const progress = this.timeSinceLastMove / MOVE_INTERVAL;
 
         this.pacman.render(progress);
-        for (const ghost of this.ghosts) ghost.render(progress);
+        this.ghosts[0].render(progress);
+
+        //for (const ghost of this.ghosts) ghost.render(progress);
     }
 
     /**
@@ -192,8 +194,7 @@ export class Game {
         this.pacman.move(this.maze);
 
         this.ghosts[0].pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone());
-        console.log(this.maze.grid); 
-
+        this.ghosts[0].move();
 
         // Recolectar orbe o pellet en la celda actual de Pac-Man
         const collected = this.maze.collectAt(this.pacman.posicion);
@@ -202,9 +203,9 @@ export class Game {
         }
 
         // Mover cada fantasma un paso
-        for (const ghost of this.ghosts) {
+        /*for (const ghost of this.ghosts) {
             ghost.move(this.maze, this.pacman);
-        }
+        }*/
 
         // Evaluar colisiones Pac-Man ↔ fantasmas
         for (const ghost of this.ghosts) {
@@ -269,7 +270,7 @@ export class Game {
 
             // Los puntos se duplican con cada fantasma comido en el mismo poder
             const scoreKey = `GHOST_${Math.min(this.ghostsEatenThisPellet, 4)}`;
-            this.score    += SCORE[scoreKey];
+            this.score += SCORE[scoreKey];
             this.ui.updateScore(this.score);
 
             ghost.eat();
@@ -299,8 +300,8 @@ export class Game {
         }
 
         this.ghostsEatenThisPellet = 0;
-        this.inputDirection        = { x: 0, y: 0 };
-        this.timeSinceLastMove     = 0;
+        this.inputDirection = { x: 0, y: 0 };
+        this.timeSinceLastMove = 0;
     }
 
     /** Libera todos los recursos del juego */

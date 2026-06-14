@@ -63,6 +63,8 @@ export class Ghost {
         /** Timer interno para salir del estado FRIGHTENED */
         this._frightenTimer = null;
 
+        this.movimientos = [];
+
         // ── Visual ────────────────────────────────────────────
         // TODO: reemplazar por Sprite/AnimatedSprite cuando haya assets.
         this.graphics = new Graphics();
@@ -80,8 +82,9 @@ export class Ghost {
             allowDiagonals: false,
             dontCrossCorners: true,
         });
-        const path = pathfinder.findPath(13, 11, 12, 12, grid);
-        console.log(grid);
+        const path = pathfinder.findPath(this.posicion.x, this.posicion.y, posObjetivo.x, posObjetivo.y, grid);
+        path.shift();
+        this.movimientos = path;
     }
 
 
@@ -131,14 +134,29 @@ export class Ghost {
      * @param {import('./Maze.js').Maze} maze
      * @param {import('./Pacman.js').Pacman} pacman
      */
-    move(maze, pacman) {
-        // Guardar posición anterior para la interpolación visual
-        this.prevPos = this.posicion;
+    move() {
+        // Guardar posición actual como "anterior" para la interpolación del render
+        this.prevPos.x = this.posicion.x;
+        this.prevPos.y = this.posicion.y;
 
-        // ── PATHFINDING PENDIENTE ────────────────────────────
-        // Los fantasmas no se mueven por ahora.
-        // Implementar cada caso según los comentarios de arriba.
-        // ─────────────────────────────────────────────────────
+        if (!this.movimientos || this.movimientos.length === 0) return;
+
+        let sigMov = this.movimientos.shift();
+
+        // Calcular la celda destino en la dirección actual
+        let newX = sigMov[0];
+        let newY = sigMov[1];
+
+
+        // Túnel horizontal: salir por un lado y entrar por el otro
+        if (newX < 0) newX = COLS - 1;
+        if (newX >= COLS) newX = 0;
+
+
+        this.posicion.x = newX;
+        this.posicion.y = newY;
+        
+
     }
 
     // ── Cambios de estado ─────────────────────────────────────
@@ -194,6 +212,9 @@ export class Ghost {
 
         this.graphics.x = _cellCenter(interpX);
         this.graphics.y = _cellCenterY(interpY);
+
+        this._redraw();
+
     }
 
     /**
