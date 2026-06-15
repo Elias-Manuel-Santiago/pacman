@@ -17,6 +17,8 @@ import { Pacman } from './Pacman.js';
 import { Ghost } from './Ghost.js';
 import { Rojo } from './Rojo.js';
 import { Pink } from './Pink.js';
+import { Cyan } from './Cyan.js';
+import { Yellow } from './Yellow.js';
 import { UI } from './UI.js';
 import {
     CANVAS_WIDTH,
@@ -101,7 +103,9 @@ export class Game {
         // Fantasmas: uno por cada entrada en GHOST_CONFIGS
         this.ghosts = [
             new Rojo(this.app.stage, 0, 14, 11, 0xff0000, 'rojito'),
-            new Pink(this.app.stage, 1, 16, 11, 0xff69b4, 'rosita')
+            new Pink(this.app.stage, 1, 16, 11, 0xff69b4, 'rosita'),
+            new Cyan(this.app.stage, 2, 18, 11, 0x00ffff, 'celestito'),
+            new Yellow(this.app.stage, 3, 12, 11, 0xffa500, 'amarillito')
         ]
 
         this.ghosts[0].pathfinding
@@ -167,6 +171,8 @@ export class Game {
      * @param {import('pixi.js').Ticker} ticker
      */
     _update(ticker) {
+
+
         if (this.state !== STATE.PLAYING) return;
 
         this.timeSinceLastMove += ticker.deltaMS;
@@ -188,7 +194,7 @@ export class Game {
         const progressGhost = this.timeSinceLastMoveGhost / MOVE_INTERVAL_GHOST;
 
         this.pacman.render(progress);
-        for (const ghost of this.ghosts){
+        for (const ghost of this.ghosts) {
             ghost.render(progressGhost);
         }
 
@@ -238,20 +244,7 @@ export class Game {
             this._onCollect(collected);
         }
 
-        // Mover cada fantasma un paso
-        /*for (const ghost of this.ghosts) {
-            ghost.move(this.maze, this.pacman);
-        }*/
-
-        // Evaluar colisiones Pac-Man ↔ fantasmas
-        for (const ghost of this.ghosts) {
-            if (this._overlaps(this.pacman, ghost)) {
-                //this._resolveCollision(ghost);
-                // Salir del tick si el juego terminó o Pac-Man murió
-                //if (this.state !== STATE.PLAYING) return;
-            }
-        }
-
+ 
         // Victoria: todos los orbes recolectados
         if (this.maze.countRemainingOrbs() === 0) {
             this.state = STATE.WIN;
@@ -287,6 +280,32 @@ export class Game {
 
                     }
                     ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone(), this.pacman, this.maze);
+                    ghost.move();
+                    break;
+                case 2:
+                    if (ghost.state == 'scatter') {
+                        ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone(), this.pacman);
+                        if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
+                            ghost.state = 'chase';
+                        }
+                        ghost.move();
+                        continue;
+
+                    }
+                    ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone(), this.pacman);
+                    ghost.move();
+                    break;
+                case 3:
+                    if (ghost.state == 'scatter') {
+                        ghost.pathfinding(this.maze.gridPathfinding.clone(), this.maze);
+                        if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
+                            ghost.state = 'chase';
+                        }
+                        ghost.move();
+                        continue;
+
+                    }
+                    ghost.pathfinding(this.maze.gridPathfinding.clone(), this.maze);
                     ghost.move();
                     break;
                 default:

@@ -25,7 +25,7 @@ export const PACMAN_START = { x: 13, y: 23 };
 export const GHOST_CONFIGS = [
     { id: 0, x: 14, y: 11, name: 'Blinky', color: 0xff0000 }, // rojo
     { id: 1, x: 14, y: 11, name: 'Pinky', color: 0xff69b4 }, // rosa
-    { id: 2, x: 12, y: 14, name: 'Inky', color: 0x00ffff }, // cian
+    { id: 2, x: 16, y: 11, name: 'Inky', color: 0x00ffff }, // cian
     { id: 3, x: 16, y: 14, name: 'Clyde', color: 0xffa500 }, // naranja
 ];
 

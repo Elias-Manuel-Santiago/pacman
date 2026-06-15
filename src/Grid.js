@@ -54,7 +54,6 @@ export const CELL = {
 // Ver Ghost.js para los comentarios de implementación de pathfinding.
 export const GHOST_STATE = {
     HOUSE:      'house',      // espera dentro de la casa, sale después de un tiempo
-    CORNER:     'corner',     // va hacia su esquina
     SCATTER:    'scatter',    // se mueve hacia su esquina objetivo del laberinto
     CHASE:      'chase',      // persigue a Pac-Man usando pathfinding
     FRIGHTENED: 'frightened', // huye de Pac-Man tras un orbe de poder
