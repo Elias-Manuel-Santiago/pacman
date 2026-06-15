@@ -15,6 +15,8 @@ import { Graphics } from 'pixi.js';
 import { Maze, PACMAN_START, GHOST_CONFIGS } from './Maze.js';
 import { Pacman } from './Pacman.js';
 import { Ghost } from './Ghost.js';
+import { Rojo } from './Rojo.js';
+import { Pink } from './Pink.js';
 import { UI } from './UI.js';
 import {
     CANVAS_WIDTH,
@@ -97,9 +99,12 @@ export class Game {
         this.pacman = new Pacman(this.app.stage, PACMAN_START.x, PACMAN_START.y);
 
         // Fantasmas: uno por cada entrada en GHOST_CONFIGS
-        this.ghosts = GHOST_CONFIGS.map((cfg) =>
-            new Ghost(this.app.stage, cfg.id, cfg.x, cfg.y, cfg.color, cfg.name),
-        );
+        this.ghosts = [
+            new Rojo(this.app.stage, 0, 14, 11, 0xff0000, 'rojito'),
+            new Pink(this.app.stage, 1, 16, 11, 0xff69b4, 'rosita')
+        ]
+
+        this.ghosts[0].pathfinding
 
         this.ui.updateScore(this.score);
         this.ui.updateLives(this.lives);
@@ -183,7 +188,9 @@ export class Game {
         const progressGhost = this.timeSinceLastMoveGhost / MOVE_INTERVAL_GHOST;
 
         this.pacman.render(progress);
-        this.ghosts[0].render(progressGhost);
+        for (const ghost of this.ghosts){
+            ghost.render(progressGhost);
+        }
 
         // Chequeo visual de colisión, cada frame
         this._checkVisualCollisions(progress, progressGhost);
@@ -191,7 +198,7 @@ export class Game {
         //for (const ghost of this.ghosts) ghost.render(progress);
     }
 
-
+    // Colisiones interpoladas
     _checkVisualCollisions(progressPacman, progressGhost) {
         const pacmanPos = this.pacman.getInterpPos(progressPacman);
         for (const ghost of this.ghosts) {
@@ -199,7 +206,7 @@ export class Game {
             const dx = pacmanPos.x - ghostPos.x;
             const dy = pacmanPos.y - ghostPos.y;
             // Cuadratica para calcular diagonales
-            const distSquared= dx * dx + dy * dy;
+            const distSquared = dx * dx + dy * dy;
 
             // Umbral: por ejemplo, menos de media celda de distancia
             const threshold = 0.5;
@@ -254,8 +261,40 @@ export class Game {
     }
 
     _tickGhost() {
-        this.ghosts[0].pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone());
-        this.ghosts[0].move();
+        for (const ghost of this.ghosts) {
+            switch (ghost.id) {
+                case 0:
+                    if (ghost.state == 'scatter') {
+                        ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone());
+                        if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
+                            ghost.state = 'chase';
+                        }
+                        ghost.move();
+                        continue;
+
+                    }
+                    ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone());
+                    ghost.move();
+                    break;
+                case 1:
+                    if (ghost.state == 'scatter') {
+                        ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone(), this.pacman, this.maze);
+                        if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
+                            ghost.state = 'chase';
+                        }
+                        ghost.move();
+                        continue;
+
+                    }
+                    ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone(), this.pacman, this.maze);
+                    ghost.move();
+                    break;
+                default:
+                    console.log('fantasma inexistente');
+            }
+
+        }
+
     }
 
     // ── Eventos del juego ─────────────────────────────────────

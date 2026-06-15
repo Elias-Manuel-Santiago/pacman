@@ -78,15 +78,7 @@ export class Ghost {
 
 
 
-    pathfinding(posObjetivo, grid) {
-        const pathfinder = new PF.AStarFinder({
-            allowDiagonals: false,
-            dontCrossCorners: true,
-        });
-        const path = pathfinder.findPath(this.posicion.x, this.posicion.y, posObjetivo.x, posObjetivo.y, grid);
-        path.shift();
-        this.movimientos = path;
-    }
+
 
 
     // ── Lógica de movimiento ──────────────────────────────────

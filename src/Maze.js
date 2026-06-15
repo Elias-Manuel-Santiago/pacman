@@ -24,7 +24,7 @@ export const PACMAN_START = { x: 13, y: 23 };
  */
 export const GHOST_CONFIGS = [
     { id: 0, x: 14, y: 11, name: 'Blinky', color: 0xff0000 }, // rojo
-    { id: 1, x: 14, y: 14, name: 'Pinky', color: 0xff69b4 }, // rosa
+    { id: 1, x: 14, y: 11, name: 'Pinky', color: 0xff69b4 }, // rosa
     { id: 2, x: 12, y: 14, name: 'Inky', color: 0x00ffff }, // cian
     { id: 3, x: 16, y: 14, name: 'Clyde', color: 0xffa500 }, // naranja
 ];
@@ -116,8 +116,7 @@ export class Maze {
         // La celda de inicio de Pac-Man no tiene orbe
         this.grid[PACMAN_START.y][PACMAN_START.x] = CELL.EMPTY;
 
-        // pathfinding espera una grilla binaria (0/1 o true/false) para caminar.
-        // `this.grid` contiene tipos (CELL.*), entonces armamos la matriz 0/1.
+
         // 0 = caminable, 1 = no caminable
         const pfMatrix = [];
         for (let y = 0; y < ROWS; y++) {
@@ -126,6 +125,7 @@ export class Maze {
                 pfMatrix[y][x] = this.grid[y][x] == CELL.WALL ? 1 : 0;
             }
         }
+
 
         this.gridPathfinding = new PF.Grid(pfMatrix);
     }
