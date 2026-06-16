@@ -12,6 +12,8 @@ export class Yellow extends Ghost {
         this.firstScatterDone = false;
         this.esquina = { x: 2, y: 29 };
         this.objetivo = { x: 2, y: 29 };
+
+        this.wait(12000);
     }
     pathfinding(grid, maze) {
         const pathfinder = new PF.AStarFinder({

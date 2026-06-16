@@ -143,6 +143,8 @@ export class UI {
         winBg.rect(0, UI_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT - UI_HEIGHT);
         winBg.fill({ color: 0x000000, alpha: 0.75 });
         this.winContainer.addChild(winBg);
+        this.gameOverContainer.zIndex = 10;
+
 
         const winTitle = new Text({
             text: '¡GANASTE!',

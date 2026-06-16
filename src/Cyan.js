@@ -11,7 +11,8 @@ export class Cyan extends Ghost {
 
         this.firstScatterDone = false;
         this.esquina = { x: 27, y: 29 };
-
+        
+        this.wait(8000)
     }
     pathfinding(posObjetivo, grid, pacman) {
         const pathfinder = new PF.AStarFinder({
@@ -25,15 +26,19 @@ export class Cyan extends Ghost {
         }
 
         if (this.firstScatterDone) {
-            if (dist >= 10) {
-                this.state = 'chase';
-            } else {
-                this.state = 'scatter';
+            if (this.state != 'frightened') {
+                if (dist >= 10) {
+                    this.state = 'chase';
+                } else {
+                    this.state = 'scatter';
+                }
             }
+
         }
 
         const path = pathfinder.findPath(this.posicion.x, this.posicion.y, posObjetivo.x, posObjetivo.y, grid);
         path.shift();
         this.movimientos = path;
     }
+
 }

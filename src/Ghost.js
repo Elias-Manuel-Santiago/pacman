@@ -62,6 +62,8 @@ export class Ghost {
 
         /** Timer interno para salir del estado FRIGHTENED */
         this._frightenTimer = null;
+        this.respawnTimer = null;
+        this.respawnDuration = 8000;
 
         this.movimientos = [];
 
@@ -74,56 +76,10 @@ export class Ghost {
         this.graphics.x = _cellCenter(startX);
         this.graphics.y = _cellCenterY(startY);
         this._redraw();
+
     }
 
-
-
-
-
-
-    // ── Lógica de movimiento ──────────────────────────────────
-
     /**
-     * Mueve el fantasma un paso en la grilla.
-     * Llamado una vez por tick de juego.
-     *
-     * ════════════════════════════════════════════════════════
-     *  AQUÍ VA EL PATHFINDING — instrucciones por estado:
-     *
-     *  HOUSE:
-     *    Salir por la puerta (moverse hacia row 13, col 13).
-     *    maze.isGhostWalkable(x, y) devuelve true para GHOST_DOOR.
-     *    Al salir, cambiar state a SCATTER.
-     *
-     *  SCATTER:
-     *    Cada fantasma tiene una "esquina objetivo":
-     *      Blinky  → arriba-derecha  (col 25, row 0)
-     *      Pinky   → arriba-izquierda (col 2,  row 0)
-     *      Inky    → abajo-derecha   (col 25, row 30)
-     *      Clyde   → abajo-izquierda (col 2,  row 30)
-     *    Usar BFS o A* para navegar hacia esa esquina.
-     *
-     *  CHASE:
-     *    Target = posición de Pac-Man (pacman.gridX, pacman.gridY).
-     *    Blinky apunta directo a Pac-Man.
-     *    Los demás usan offsets (ver comportamiento original de Pac-Man).
-     *    Usar BFS o A* hacia el target.
-     *
-     *  FRIGHTENED:
-     *    Moverse aleatoriamente o alejarse de Pac-Man.
-     *    Nunca dar media vuelta.
-     *
-     *  EATEN:
-     *    Target = entrada de la casa (col 13, row 13).
-     *    Usar BFS o A* hasta llegar.
-     *    Al llegar, cambiar state a HOUSE (o SCATTER si se quiere).
-     *
-     *  Regla general de movimiento en Pac-Man:
-     *    Los fantasmas NO pueden dar media vuelta (invertir dirección).
-     *    En cada intersección eligen la dirección que minimiza la
-     *    distancia al target (greedy) o usan BFS/A* completo.
-     * ════════════════════════════════════════════════════════
-     *
      * @param {import('./Maze.js').Maze} maze
      * @param {import('./Pacman.js').Pacman} pacman
      */
@@ -150,6 +106,41 @@ export class Ghost {
         this.posicion.y = newY;
 
 
+    }
+
+    pathfindingFrightened(pacmanPos, grid) {
+        this.movimientos = [];
+
+
+        // ─── EL TRUCO: CONVERTIR A PAC-MAN EN PARED ───
+        // */ Usamos el método nativo de la librería 'pathfinding' para bloquear su celda
+
+        if (pacmanPos.x >= 0 && pacmanPos.x < grid.width &&
+            pacmanPos.y >= 0 && pacmanPos.y < grid.height) {
+            grid.setWalkableAt(pacmanPos.x, pacmanPos.y, false);
+        }
+
+        // Instanciamos el buscador de caminos
+        const finder = new PF.AStarFinder();
+
+        // Calculamos la ruta desde la posición actual del fantasma hasta la esquina elegida
+        const path = finder.findPath(
+            this.posicion.x,
+            this.posicion.y,
+            this.esquina.x,
+            this.esquina.y,
+            grid
+        );
+
+        // 4. Si encontró un camino, le asignamos el siguiente paso
+        if (path && path.length > 1) {
+            // path[0] es la posición actual, path[1] es el siguiente paso en la grilla
+            path.shift();
+            this.movimientos = path;
+        } else {
+            // En caso de emergencia (si la esquina está bloqueada), nos quedamos quietos o recalculamos
+            this.movimientos = [];
+        }
     }
 
     // ── Cambios de estado ─────────────────────────────────────
@@ -181,14 +172,6 @@ export class Ghost {
      * Marca el fantasma como comido. Vuelve a la casa antes de reactivarse.
      * (La lógica de retorno está pendiente en move() — estado EATEN.)
      */
-    eat() {
-        this.state = GHOST_STATE.EATEN;
-        if (this._frightenTimer) {
-            clearTimeout(this._frightenTimer);
-            this._frightenTimer = null;
-        }
-        this._redraw();
-    }
 
     // ── Render ────────────────────────────────────────────────
 
@@ -284,22 +267,41 @@ export class Ghost {
             clearTimeout(this._frightenTimer);
             this._frightenTimer = null;
         }
-
+        this.graphics.visible = true;
         this.graphics.x = _cellCenter(x);
         this.graphics.y = _cellCenterY(y);
         this._redraw();
     }
 
+
+
+    respawn() {
+        this.graphics.visible = false;
+        this.movimientos = [];
+        this.state = 'chase';
+        clearTimeout(this._frightenTimer);
+        this._frightenTimer = null;
+        this.respawnTimer = setTimeout(() => {
+            this.reset(14, 14);
+        }, this.respawnDuration);
+    }
+
     destroy() {
-        if (this._frightenTimer) clearTimeout(this._frightenTimer);
+        clearTimeout(this._frightenTimer);
+        this._frightenTimer = null;
         this.graphics.destroy();
     }
-    // En Pacman.js y Ghost.js, agregar un getter:
     getInterpPos(progress) {
         const wrapping = Math.abs(this.prevPos.x - this.posicion.x) > COLS / 2;
         const x = wrapping ? this.posicion.x : lerp(this.prevPos.x, this.posicion.x, progress);
         const y = lerp(this.prevPos.y, this.posicion.y, progress);
         return { x, y };
+    }
+
+    wait(duration){
+        setTimeout(() => {
+            this.state = GHOST_STATE.SCATTER;
+        }, duration);
     }
 }
 

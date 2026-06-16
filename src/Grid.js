@@ -32,6 +32,8 @@ export const MOVE_INTERVAL = 200;
 
 export const MOVE_INTERVAL_GHOST = 250;
 
+export const MOVE_INTERVAL_GHOST_FRIGHTENED = 450;
+
 /**
  * Duración del estado FRIGHTENED de los fantasmas (ms).
  * Tiempo en que Pac-Man puede comerse a los fantasmas tras un orbe de poder.

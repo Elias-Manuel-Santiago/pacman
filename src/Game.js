@@ -26,6 +26,7 @@ import {
     UI_HEIGHT,
     MOVE_INTERVAL,
     MOVE_INTERVAL_GHOST,
+    MOVE_INTERVAL_GHOST_FRIGHTENED,
     FRIGHTEN_DURATION,
     GHOST_STATE,
     CELL,
@@ -81,7 +82,7 @@ export class Game {
 
         this.state = STATE.PLAYING;
         this.score = 0;
-        this.lives = 3;
+        this.lives = 1;
         this.timeSinceLastMove = 0;
         this.ghostsEatenThisPellet = 0;
         this.inputDirection = { x: 0, y: 0 };
@@ -102,10 +103,10 @@ export class Game {
 
         // Fantasmas: uno por cada entrada en GHOST_CONFIGS
         this.ghosts = [
-            new Rojo(this.app.stage, 0, 14, 11, 0xff0000, 'rojito'),
-            new Pink(this.app.stage, 1, 16, 11, 0xff69b4, 'rosita'),
-            new Cyan(this.app.stage, 2, 18, 11, 0x00ffff, 'celestito'),
-            new Yellow(this.app.stage, 3, 12, 11, 0xffa500, 'amarillito')
+            new Rojo(this.app.stage, 0, 15, 11, 0xff0000, 'rojito'),
+            new Pink(this.app.stage, 1, 14, 14, 0xff69b4, 'rosita'),
+            new Cyan(this.app.stage, 2, 16, 14, 0x00ffff, 'celestito'),
+            new Yellow(this.app.stage, 3, 13, 14, 0xffa500, 'amarillito')
         ]
 
         this.ghosts[0].pathfinding
@@ -171,43 +172,51 @@ export class Game {
      * @param {import('pixi.js').Ticker} ticker
      */
     _update(ticker) {
-
-
         if (this.state !== STATE.PLAYING) return;
+
+        // 1. Determinar de forma correcta si AL MENOS UNO está asustado
+        // (Ignorando a los que están muertos o en la casa)
+        const algunoAsustado = this.ghosts.some(g => g.state === 'frightened');
+        const ghostIntervalByState = algunoAsustado
+            ? MOVE_INTERVAL_GHOST_FRIGHTENED
+            : MOVE_INTERVAL_GHOST;
 
         this.timeSinceLastMove += ticker.deltaMS;
         this.timeSinceLastMoveGhost += ticker.deltaMS;
 
-        while (this.timeSinceLastMove > MOVE_INTERVAL || this.timeSinceLastMoveGhost > MOVE_INTERVAL_GHOST) {
+        // 2. Bucle de ticks lógicos
+        while (this.timeSinceLastMove > MOVE_INTERVAL || this.timeSinceLastMoveGhost > ghostIntervalByState) {
             if (this.timeSinceLastMove > MOVE_INTERVAL) {
                 this.timeSinceLastMove -= MOVE_INTERVAL;
-                this._tick(); // ahora SIN chequeo de colisión acá
+                this._tick();
             }
-            if (this.timeSinceLastMoveGhost > MOVE_INTERVAL_GHOST) {
-                this.timeSinceLastMoveGhost -= MOVE_INTERVAL_GHOST;
+            if (this.timeSinceLastMoveGhost > ghostIntervalByState) {
+                this.timeSinceLastMoveGhost -= ghostIntervalByState;
                 this._tickGhost();
             }
             if (this.state !== STATE.PLAYING) return;
         }
 
-        const progress = this.timeSinceLastMove / MOVE_INTERVAL;
-        const progressGhost = this.timeSinceLastMoveGhost / MOVE_INTERVAL_GHOST;
+        // 3. Renderizado suavizado (Evita que pase de 1 si hubo un cambio de estado rápido)
+        const progress = Math.min(this.timeSinceLastMove / MOVE_INTERVAL, 0.99);
+        const progressGhost = Math.min(this.timeSinceLastMoveGhost / ghostIntervalByState, 0.99);
 
         this.pacman.render(progress);
         for (const ghost of this.ghosts) {
             ghost.render(progressGhost);
         }
 
-        // Chequeo visual de colisión, cada frame
+        // 4. Colisiones
         this._checkVisualCollisions(progress, progressGhost);
-
-        //for (const ghost of this.ghosts) ghost.render(progress);
     }
 
     // Colisiones interpoladas
     _checkVisualCollisions(progressPacman, progressGhost) {
         const pacmanPos = this.pacman.getInterpPos(progressPacman);
         for (const ghost of this.ghosts) {
+            if (!ghost.graphics.visible) {
+                continue;
+            }
             const ghostPos = ghost.getInterpPos(progressGhost);
             const dx = pacmanPos.x - ghostPos.x;
             const dy = pacmanPos.y - ghostPos.y;
@@ -244,7 +253,7 @@ export class Game {
             this._onCollect(collected);
         }
 
- 
+
         // Victoria: todos los orbes recolectados
         if (this.maze.countRemainingOrbs() === 0) {
             this.state = STATE.WIN;
@@ -255,6 +264,20 @@ export class Game {
 
     _tickGhost() {
         for (const ghost of this.ghosts) {
+            if (!ghost.graphics.visible) {
+                continue;
+            }
+
+            if (ghost.state == 'frightened') {
+                const gridClone = this.maze.gridPathfinding.clone();
+                ghost.pathfindingFrightened(this.pacman.posicion, gridClone);
+                ghost.move();
+                continue;
+            }
+
+            if(ghost.state == 'house'){
+                continue;
+            }
             switch (ghost.id) {
                 case 0:
                     if (ghost.state == 'scatter') {
@@ -342,15 +365,6 @@ export class Game {
     }
 
     /**
-     * Devuelve true si Pac-Man y el fantasma ocupan la misma celda.
-     * @param {Pacman} pacman
-     * @param {Ghost} ghost
-     */
-    _overlaps(pacman, ghost) {
-        return ghost.posicion.x === pacman.posicion.x && ghost.posicion.y === pacman.posicion.y;
-    }
-
-    /**
      * Resuelve el contacto entre Pac-Man y un fantasma:
      *   - Fantasma FRIGHTENED → Pac-Man lo come (puntos dobles acumulados)
      *   - Fantasma EATEN      → ya está fuera de juego, ignorar
@@ -366,7 +380,7 @@ export class Game {
             this.score += SCORE[scoreKey];
             this.ui.updateScore(this.score);
 
-            ghost.eat();
+            ghost.respawn();
 
         } else if (ghost.state !== GHOST_STATE.EATEN) {
             this._pacmanDied();

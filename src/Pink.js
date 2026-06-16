@@ -11,6 +11,8 @@ export class Pink extends Ghost {
 
 
         this.esquina = { x: 27, y: 1 };
+
+        this.wait(4000);
     }
     pathfinding(posObjetivo, grid, pacman, maze) {
         const pathfinder = new PF.AStarFinder({
@@ -20,10 +22,9 @@ export class Pink extends Ghost {
         let path = [];
 
         if (this.state == 'chase') {
-            // Si Pink está a 4 o menos celdas de Pacman (Manhattan), perseguir directo
             const dist = Math.abs(this.posicion.x - pacman.posicion.x) + Math.abs(this.posicion.y - pacman.posicion.y);
 
-            if (dist <= 4) {
+            if (dist <= 8) {
                 path = pathfinder.findPath(this.posicion.x, this.posicion.y, pacman.posicion.x, pacman.posicion.y, grid);
                 path.shift();
             } else {
