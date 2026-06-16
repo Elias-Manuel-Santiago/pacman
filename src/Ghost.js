@@ -21,7 +21,7 @@
 // Los vecinos de (x, y) son los cuatro cardinales: (x±1, y) y (x, y±1).
 
 import { Graphics } from 'pixi.js';
-import { CELL_SIZE, UI_HEIGHT, COLS, ROWS, GHOST_STATE, lerp } from './Grid.js';
+import { CELL_SIZE, UI_HEIGHT, COLS, ROWS, GHOST_STATE, lerp, MOVE_INTERVAL_GHOST, MOVE_INTERVAL_GHOST_FRIGHTENED } from './Grid.js';
 import { Maze } from './Maze.js'
 import PF from 'pathfinding'
 
@@ -64,6 +64,8 @@ export class Ghost {
         this._frightenTimer = null;
         this.respawnTimer = null;
         this.respawnDuration = 8000;
+
+        this.timeSinceLastMove = 0;
 
         this.movimientos = [];
 
@@ -151,10 +153,13 @@ export class Ghost {
      * @param {number} duration - Duración en milisegundos
      */
     frighten(duration) {
-        // No asustar a un fantasma ya comido (está volviendo a la casa)
+        // No asustar a un fantasma ya comido 
+        // No asustar a un fantasma en casa
         if (this.state === GHOST_STATE.EATEN) return;
+        if (this.state === GHOST_STATE.HOUSE) return;
 
         this.state = GHOST_STATE.FRIGHTENED;
+        this.timeSinceLastMove = 0;
         this._redraw();
 
         // Cancelar el timer anterior si el jugador reactivó el poder
@@ -261,7 +266,6 @@ export class Ghost {
         this.posicion = { x: x, y: y };
         this.prevPos = { x: x, y: y };
         this.direction = { x: 0, y: -1 };
-        this.state = (y <= 12) ? GHOST_STATE.SCATTER : GHOST_STATE.HOUSE;
 
         if (this._frightenTimer) {
             clearTimeout(this._frightenTimer);
@@ -278,10 +282,11 @@ export class Ghost {
     respawn() {
         this.graphics.visible = false;
         this.movimientos = [];
-        this.state = 'chase';
+        this.state = GHOST_STATE.EATEN;
         clearTimeout(this._frightenTimer);
         this._frightenTimer = null;
         this.respawnTimer = setTimeout(() => {
+            this.state = GHOST_STATE.CHASE;
             this.reset(14, 14);
         }, this.respawnDuration);
     }
@@ -298,7 +303,15 @@ export class Ghost {
         return { x, y };
     }
 
-    wait(duration){
+    getSpeedInterval() {
+        if (this.state == GHOST_STATE.FRIGHTENED) {
+            return MOVE_INTERVAL_GHOST_FRIGHTENED;
+        } else {
+            return MOVE_INTERVAL_GHOST;
+        }
+    }
+
+    wait(duration) {
         setTimeout(() => {
             this.state = GHOST_STATE.SCATTER;
         }, duration);

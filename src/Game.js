@@ -174,49 +174,48 @@ export class Game {
     _update(ticker) {
         if (this.state !== STATE.PLAYING) return;
 
-        // 1. Determinar de forma correcta si AL MENOS UNO está asustado
-        // (Ignorando a los que están muertos o en la casa)
-        const algunoAsustado = this.ghosts.some(g => g.state === 'frightened');
-        const ghostIntervalByState = algunoAsustado
-            ? MOVE_INTERVAL_GHOST_FRIGHTENED
-            : MOVE_INTERVAL_GHOST;
-
         this.timeSinceLastMove += ticker.deltaMS;
-        this.timeSinceLastMoveGhost += ticker.deltaMS;
-
-        // 2. Bucle de ticks lógicos
-        while (this.timeSinceLastMove > MOVE_INTERVAL || this.timeSinceLastMoveGhost > ghostIntervalByState) {
+        while (this.timeSinceLastMove > MOVE_INTERVAL) {
             if (this.timeSinceLastMove > MOVE_INTERVAL) {
                 this.timeSinceLastMove -= MOVE_INTERVAL;
                 this._tick();
             }
-            if (this.timeSinceLastMoveGhost > ghostIntervalByState) {
-                this.timeSinceLastMoveGhost -= ghostIntervalByState;
-                this._tickGhost();
-            }
             if (this.state !== STATE.PLAYING) return;
         }
-
-        // 3. Renderizado suavizado (Evita que pase de 1 si hubo un cambio de estado rápido)
-        const progress = Math.min(this.timeSinceLastMove / MOVE_INTERVAL, 0.99);
-        const progressGhost = Math.min(this.timeSinceLastMoveGhost / ghostIntervalByState, 0.99);
-
+        const progress = this.timeSinceLastMove / MOVE_INTERVAL;
         this.pacman.render(progress);
+
+
         for (const ghost of this.ghosts) {
+            if (!ghost.graphics.visible) continue;
+
+            // Cada uno acumula su delta de tiempo
+            ghost.timeSinceLastMove += ticker.deltaMS;
+            const currentInterval = ghost.getSpeedInterval();
+
+            // Se ejecutan tantos ticks lógicos como exija su propio intervalo
+            while (ghost.timeSinceLastMove > currentInterval) {
+                ghost.timeSinceLastMove -= currentInterval;
+                this._tickSingleGhost(ghost); // Ejecuta la IA de un solo fantasma
+                if (this.state !== STATE.PLAYING) return;
+            }
+
+            const progressGhost = ghost.timeSinceLastMove / currentInterval;
             ghost.render(progressGhost);
         }
 
         // 4. Colisiones
-        this._checkVisualCollisions(progress, progressGhost);
+        this._checkVisualCollisions(progress);
     }
 
     // Colisiones interpoladas
-    _checkVisualCollisions(progressPacman, progressGhost) {
+    _checkVisualCollisions(progressPacman) {
         const pacmanPos = this.pacman.getInterpPos(progressPacman);
         for (const ghost of this.ghosts) {
             if (!ghost.graphics.visible) {
                 continue;
             }
+            const progressGhost = ghost.timeSinceLastMove / ghost.getSpeedInterval();
             const ghostPos = ghost.getInterpPos(progressGhost);
             const dx = pacmanPos.x - ghostPos.x;
             const dy = pacmanPos.y - ghostPos.y;
@@ -262,81 +261,79 @@ export class Game {
 
     }
 
-    _tickGhost() {
-        for (const ghost of this.ghosts) {
-            if (!ghost.graphics.visible) {
-                continue;
-            }
 
-            if (ghost.state == 'frightened') {
-                const gridClone = this.maze.gridPathfinding.clone();
-                ghost.pathfindingFrightened(this.pacman.posicion, gridClone);
-                ghost.move();
-                continue;
-            }
+    _tickSingleGhost(ghost) {
+        console.log(ghost.name, ghost.state);
 
-            if(ghost.state == 'house'){
-                continue;
-            }
-            switch (ghost.id) {
-                case 0:
-                    if (ghost.state == 'scatter') {
-                        ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone());
-                        if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
-                            ghost.state = 'chase';
-                        }
-                        ghost.move();
-                        continue;
-
-                    }
-                    ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone());
-                    ghost.move();
-                    break;
-                case 1:
-                    if (ghost.state == 'scatter') {
-                        ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone(), this.pacman, this.maze);
-                        if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
-                            ghost.state = 'chase';
-                        }
-                        ghost.move();
-                        continue;
-
-                    }
-                    ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone(), this.pacman, this.maze);
-                    ghost.move();
-                    break;
-                case 2:
-                    if (ghost.state == 'scatter') {
-                        ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone(), this.pacman);
-                        if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
-                            ghost.state = 'chase';
-                        }
-                        ghost.move();
-                        continue;
-
-                    }
-                    ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone(), this.pacman);
-                    ghost.move();
-                    break;
-                case 3:
-                    if (ghost.state == 'scatter') {
-                        ghost.pathfinding(this.maze.gridPathfinding.clone(), this.maze);
-                        if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
-                            ghost.state = 'chase';
-                        }
-                        ghost.move();
-                        continue;
-
-                    }
-                    ghost.pathfinding(this.maze.gridPathfinding.clone(), this.maze);
-                    ghost.move();
-                    break;
-                default:
-                    console.log('fantasma inexistente');
-            }
-
+        if (ghost.state === GHOST_STATE.FRIGHTENED) {
+            const gridClone = this.maze.gridPathfinding.clone();
+            ghost.pathfindingFrightened(this.pacman.posicion, gridClone);
+            ghost.move();
+            return;
         }
 
+        const gridClone = this.maze.gridPathfinding.clone();
+
+        switch (ghost.id) {
+            case 0:
+                if (ghost.state == GHOST_STATE.SCATTER) {
+                    ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone());
+                    if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
+                        ghost.state = GHOST_STATE.CHASE;
+                    }
+                    ghost.move();
+                    break;
+                }else if(ghost.state == GHOST_STATE.HOUSE){
+                    break;
+                }
+                ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone());
+                ghost.move();
+                break;
+            case 1:
+                if (ghost.state == GHOST_STATE.SCATTER) {
+                    ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone(), this.pacman, this.maze);
+                    if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
+                        ghost.state = GHOST_STATE.CHASE;
+                    }
+                    ghost.move();
+                    break;
+                }else if(ghost.state == GHOST_STATE.HOUSE){
+                    break;
+                }
+                ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone(), this.pacman, this.maze);
+                ghost.move();
+                break;
+            case 2:
+                if (ghost.state == GHOST_STATE.SCATTER) {
+                    ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone(), this.pacman);
+                    if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
+                        ghost.state = GHOST_STATE.CHASE;
+                    }
+                    ghost.move();
+                    break;
+                }else if(ghost.state == GHOST_STATE.HOUSE){
+                    break;
+                }
+                ghost.pathfinding(this.pacman.posicion, this.maze.gridPathfinding.clone(), this.pacman);
+                ghost.move();
+                break;
+            case 3:
+                if (ghost.state == GHOST_STATE.SCATTER) {
+                    ghost.pathfinding(this.maze.gridPathfinding.clone(), this.maze);
+                    if (ghost.posicion.x == ghost.esquina.x && ghost.posicion.y == ghost.esquina.y) {
+                        ghost.state = GHOST_STATE.CHASE;
+                    }
+                    ghost.move();
+                    break;
+                }else if(ghost.state == GHOST_STATE.HOUSE){
+                    break;
+                }
+                ghost.pathfinding(this.maze.gridPathfinding.clone(), this.maze);
+                ghost.move();
+                break;
+            default:
+                console.log('fantasma inexistente');
+        }
     }
 
     // ── Eventos del juego ─────────────────────────────────────
