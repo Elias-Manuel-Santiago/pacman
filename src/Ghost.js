@@ -296,7 +296,9 @@ export class Ghost {
 
     destroy() {
         clearTimeout(this._frightenTimer);
+        clearTimeout(this.respawnTimer);
         this._frightenTimer = null;
+        this.respawnTimer = null;
         this.graphics.destroy();
     }
     getInterpPos(progress) {

@@ -297,14 +297,14 @@ export class Maze {
                     let mask = 0;
                     if (this._isBorderOfMap(x, y)) {
 
-                        if (this._isOutOfBounds(x - 1, y + 1)) mask += 1, console.log('suroeste'); // Suroeste
-                        if (this._isOutOfBounds(x + 1, y + 1)) mask += 2, console.log('sureste'); // Sureste
-                        if (this._isOutOfBounds(x + 1, y - 1)) mask += 4, console.log('noreste'); // Noreste
-                        if (this._isOutOfBounds(x - 1, y - 1)) mask += 8, console.log('noroeste'); // Noroeste
-                        if (this._isOutOfBounds(x, y + 1)) mask += 16, console.log('sur'); // Sur
-                        if (this._isOutOfBounds(x, y - 1)) mask += 32, console.log('norte'); // Norte
-                        if (this._isOutOfBounds(x - 1, y)) mask += 64, console.log('oeste'); // Oeste
-                        if (this._isOutOfBounds(x + 1, y)) mask += 128, console.log('este'); // Este
+                        if (this._isOutOfBounds(x - 1, y + 1)) mask += 1; // Suroeste
+                        if (this._isOutOfBounds(x + 1, y + 1)) mask += 2; // Sureste
+                        if (this._isOutOfBounds(x + 1, y - 1)) mask += 4; // Noreste
+                        if (this._isOutOfBounds(x - 1, y - 1)) mask += 8; // Noroeste
+                        if (this._isOutOfBounds(x, y + 1)) mask += 16; // Sur
+                        if (this._isOutOfBounds(x, y - 1)) mask += 32; // Norte
+                        if (this._isOutOfBounds(x - 1, y)) mask += 64; // Oeste
+                        if (this._isOutOfBounds(x + 1, y)) mask += 128; // Este
 
                         if(mask == 73 && this._isWallAt(x + 1, y - 1) && this._isWallAt(x + 1, y)) mask = 200;
                         if(mask == 73 && this._isWallAt(x + 1, y + 1) && this._isWallAt(x + 1, y)) mask = 201;
@@ -316,9 +316,9 @@ export class Maze {
                         if(mask == 19 && this._isWallAt(x - 1, y - 1) && this._isWallAt(x, y - 1)) mask = 207;
 
 
-                        if (this._isOutOfBounds(x, y)) mask = 256, console.log('vacio'); // Vacio
+                        if (this._isOutOfBounds(x, y)) mask = 256; // Vacio
 
-                        console.log(x + ', ' + y + ' mask border: ' + mask);
+                        
                         // Obtener coordenadas en el spritesheet. Por defecto usa la caja sólida.
                         const coords = this.tileMappingBorder[mask] || { cx: 4, cy: 2 };
 
@@ -369,7 +369,7 @@ export class Maze {
                         if (this._isGhostHouse(x, y - 1)) mask = 4;
 
 
-                        console.log(x + ', ' + y + ' mask: ' + mask);
+                        
 
                         // Obtener coordenadas en el spritesheet. Por defecto usa la caja sólida.
                         const coords = this.tileMapping[mask] || { cx: 4, cy: 2 };
