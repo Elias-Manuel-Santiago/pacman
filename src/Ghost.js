@@ -67,6 +67,9 @@ export class Ghost {
 
         this.timeSinceLastMove = 0;
 
+        /** Intervalo de movimiento normal (ms). Game.js lo ajusta según el nivel. */
+        this.moveInterval = MOVE_INTERVAL_GHOST;
+
         this.movimientos = [];
 
         // ── Visual ────────────────────────────────────────────
@@ -307,7 +310,7 @@ export class Ghost {
         if (this.state == GHOST_STATE.FRIGHTENED) {
             return MOVE_INTERVAL_GHOST_FRIGHTENED;
         } else {
-            return MOVE_INTERVAL_GHOST;
+            return this.moveInterval;
         }
     }
 
@@ -327,4 +330,3 @@ function _cellCenter(gridX) {
 function _cellCenterY(gridY) {
     return gridY * CELL_SIZE + CELL_SIZE / 2 + UI_HEIGHT;
 }
-

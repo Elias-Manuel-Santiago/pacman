@@ -35,6 +35,12 @@ export const MOVE_INTERVAL_GHOST = 250;
 export const MOVE_INTERVAL_GHOST_FRIGHTENED = 450;
 
 /**
+ * Intervalo de fantasmas para el nivel 5: menor que MOVE_INTERVAL
+ * de Pac-Man, por lo que se mueven más rápido que él.
+ */
+export const MOVE_INTERVAL_GHOST_FAST = 160;
+
+/**
  * Duración del estado FRIGHTENED de los fantasmas (ms).
  * Tiempo en que Pac-Man puede comerse a los fantasmas tras un orbe de poder.
  */

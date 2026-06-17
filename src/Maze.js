@@ -54,11 +54,14 @@ const MAZE_ASCII = [
 export class Maze {
     /**
      * @param {Container} container - Contenedor de la escena
+     * @param {Object} [options]
+     * @param {'full'|'half'|'none'} [options.pelletMode] - Cantidad de píldoras de poder
      */
-    constructor(container) {
+    constructor(container, options = {}) {
         this.grid = [];
         this.gridPathfinding = null;
         this.totalOrbs = 0;
+        this.pelletMode = options.pelletMode || 'full';
 
         // Contenedores visuales
         this.wallContainer = new Container();
@@ -97,6 +100,8 @@ export class Maze {
 
         this.grid[PACMAN_START.y][PACMAN_START.x] = CELL.EMPTY;
 
+        this._applyPelletMode();
+
         const pfMatrix = [];
         for (let y = 0; y < ROWS; y++) {
             pfMatrix[y] = [];
@@ -105,6 +110,33 @@ export class Maze {
             }
         }
         this.gridPathfinding = new PF.Grid(pfMatrix);
+    }
+
+    /**
+     * Convierte píldoras de poder (CELL.PELLET) en orbes normales (CELL.ORB)
+     * según this.pelletMode:
+     *   'full' → no se tocan
+     *   'half' → se convierte la mitad
+     *   'none' → se convierten todas
+     */
+    _applyPelletMode() {
+        if (this.pelletMode === 'full') return;
+
+        const pelletPositions = [];
+        for (let y = 0; y < ROWS; y++) {
+            for (let x = 0; x < COLS; x++) {
+                if (this.grid[y][x] === CELL.PELLET) pelletPositions.push({ x, y });
+            }
+        }
+
+        const cantidad = this.pelletMode === 'none'
+            ? pelletPositions.length
+            : Math.floor(pelletPositions.length / 2);
+
+        for (let i = 0; i < cantidad; i++) {
+            const { x, y } = pelletPositions[i];
+            this.grid[y][x] = CELL.ORB;
+        }
     }
 
     /** Carga el spritesheet de manera asíncrona o usa texturas ya cargadas */

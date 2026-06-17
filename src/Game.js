@@ -27,6 +27,7 @@ import {
     MOVE_INTERVAL,
     MOVE_INTERVAL_GHOST,
     MOVE_INTERVAL_GHOST_FRIGHTENED,
+    MOVE_INTERVAL_GHOST_FAST,
     FRIGHTEN_DURATION,
     GHOST_STATE,
     CELL,
@@ -38,6 +39,21 @@ const STATE = {
     PLAYING: 'playing',
     GAME_OVER: 'game_over',
     WIN: 'win',
+};
+
+// Cantidad total de niveles del juego
+const MAX_LEVEL = 5;
+
+// Configuración de cada nivel:
+//   ghostCount        → cuántos fantasmas se crean (en orden Rojo, Pink, Cyan, Yellow)
+//   pelletMode         → 'full' | 'half' | 'none' píldoras de poder
+//   ghostMoveInterval  → ms entre movimientos de fantasma (menor = más rápido)
+const LEVEL_CONFIGS = {
+    1: { ghostCount: 3, pelletMode: 'full', ghostMoveInterval: MOVE_INTERVAL_GHOST },
+    2: { ghostCount: 4, pelletMode: 'full', ghostMoveInterval: MOVE_INTERVAL_GHOST },
+    3: { ghostCount: 4, pelletMode: 'half', ghostMoveInterval: MOVE_INTERVAL_GHOST },
+    4: { ghostCount: 4, pelletMode: 'none', ghostMoveInterval: MOVE_INTERVAL_GHOST },
+    5: { ghostCount: 4, pelletMode: 'full', ghostMoveInterval: MOVE_INTERVAL_GHOST_FAST },
 };
 import PF from 'pathfinding'
 
@@ -74,18 +90,43 @@ export class Game {
     // ── Ciclo de vida ─────────────────────────────────────────
 
     /**
-     * Inicializa (o reinicia) una partida nueva.
-     * Destruye las entidades anteriores, resetea el estado y recrea todo.
+     * Inicializa (o reinicia) una partida nueva desde el nivel 1.
      */
     _start() {
+        this.level = 1;
+        this.score = 0;
+        this.lives = 1;
+        this._buildLevel();
+    }
+
+    /**
+     * Avanza al siguiente nivel manteniendo puntaje y vidas.
+     * Si ya se completó el último nivel, el juego se gana.
+     */
+    _nextLevel() {
+        if (this.level >= MAX_LEVEL) {
+            this.state = STATE.WIN;
+            this.ui.showWin(this.score);
+            return;
+        }
+        this.level++;
+        this._buildLevel();
+    }
+
+    /**
+     * Construye el nivel actual (this.level): destruye las entidades
+     * anteriores y recrea laberinto, Pac-Man y fantasmas según
+     * LEVEL_CONFIGS. No toca puntaje ni vidas.
+     */
+    _buildLevel() {
         this._clearScene();
 
         this.state = STATE.PLAYING;
-        this.score = 0;
-        this.lives = 1;
         this.timeSinceLastMove = 0;
         this.ghostsEatenThisPellet = 0;
         this.inputDirection = { x: 0, y: 0 };
+
+        const config = LEVEL_CONFIGS[this.level];
 
         // El fondo negro cubre toda el área de juego
         this._createBackground();
@@ -95,24 +136,29 @@ export class Game {
         // La UI se crea antes que las entidades para que quede detrás visualmente
         this.ui = new UI(this.app.stage);
 
-        // Laberinto: paredes y orbes
-        this.maze = new Maze(this.app.stage);
+        // Laberinto: paredes y orbes (cantidad de píldoras según el nivel)
+        this.maze = new Maze(this.app.stage, { pelletMode: config.pelletMode });
 
         // Pac-Man en su posición inicial
         this.pacman = new Pacman(this.app.stage, PACMAN_START.x, PACMAN_START.y);
 
-        // Fantasmas: uno por cada entrada en GHOST_CONFIGS
-        this.ghosts = [
-            new Rojo(this.app.stage, 0, 15, 11, 0xff0000, 'rojito'),
-            new Pink(this.app.stage, 1, 14, 14, 0xff69b4, 'rosita'),
-            new Cyan(this.app.stage, 2, 16, 14, 0x00ffff, 'celestito'),
-            new Yellow(this.app.stage, 3, 13, 14, 0xffa500, 'amarillito')
-        ]
+        // Fantasmas: solo se crean los primeros config.ghostCount
+        const ghostBuilders = [
+            () => new Rojo(this.app.stage, 0, 15, 11, 0xff0000, 'rojito'),
+            () => new Pink(this.app.stage, 1, 14, 14, 0xff69b4, 'rosita'),
+            () => new Cyan(this.app.stage, 2, 16, 14, 0x00ffff, 'celestito'),
+            () => new Yellow(this.app.stage, 3, 13, 14, 0xffa500, 'amarillito'),
+        ];
+        this.ghosts = ghostBuilders.slice(0, config.ghostCount).map((build) => build());
 
-        this.ghosts[0].pathfinding
+        // Velocidad de fantasmas según el nivel (nivel 5: más rápidos que Pac-Man)
+        for (const ghost of this.ghosts) {
+            ghost.moveInterval = config.ghostMoveInterval;
+        }
 
         this.ui.updateScore(this.score);
         this.ui.updateLives(this.lives);
+        this.ui.updateLevel(this.level);
     }
 
     /** Destruye todas las entidades activas y limpia el stage */
@@ -253,17 +299,14 @@ export class Game {
         }
 
 
-        // Victoria: todos los orbes recolectados
+        // Nivel completado: todos los orbes recolectados
         if (this.maze.countRemainingOrbs() === 0) {
-            this.state = STATE.WIN;
-            this.ui.showWin(this.score);
+            this._nextLevel();
         }
 
     }
 
-
     _tickSingleGhost(ghost) {
-
         if (ghost.state === GHOST_STATE.FRIGHTENED) {
             const gridClone = this.maze.gridPathfinding.clone();
             ghost.pathfindingFrightened(this.pacman.posicion, gridClone);

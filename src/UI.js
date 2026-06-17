@@ -37,13 +37,7 @@ export class UI {
         this.rightCover.fill(0x000000);
         this.hudContainer.addChild(this.rightCover);
 
-
-
-
-
-
         // Línea separadora
-
         const separator = new Graphics();
         separator.rect(0, UI_HEIGHT - 2, CANVAS_WIDTH, 2);
         separator.fill(0xffff00);
@@ -62,6 +56,20 @@ export class UI {
         this.scoreText.x = 12;
         this.scoreText.y = (UI_HEIGHT - this.scoreText.height) / 2;
         this.hudContainer.addChild(this.scoreText);
+
+        // Texto del nivel actual
+        this.levelText = new Text({
+            text: 'NIVEL 1',
+            style: {
+                fontFamily: 'Arial, sans-serif',
+                fontSize: 13,
+                fill: 0x7f8c8d,
+
+            },
+        });
+        this.levelText.x = this.scoreText.x + this.scoreText.width + 40;
+        this.levelText.y = (UI_HEIGHT - this.levelText.height) / 2;
+        this.hudContainer.addChild(this.levelText);
 
         // Indicador de vidas (texto + círculos amarillos)
         this.livesContainer = new Container();
@@ -197,6 +205,14 @@ export class UI {
     }
 
     /**
+     * Actualiza el texto del nivel actual en el HUD.
+     * @param {number} level
+     */
+    updateLevel(level) {
+        this.levelText.text = `NIVEL ${level}`;
+    }
+
+    /**
      * Actualiza el indicador visual de vidas (círculos amarillos).
      * @param {number} lives - Vidas restantes
      */
@@ -252,6 +268,4 @@ export class UI {
         this.gameOverContainer.destroy({ children: true });
         this.winContainer.destroy({ children: true });
     }
-
-
 }
