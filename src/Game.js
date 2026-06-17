@@ -263,7 +263,6 @@ export class Game {
 
 
     _tickSingleGhost(ghost) {
-        console.log(ghost.name, ghost.state);
 
         if (ghost.state === GHOST_STATE.FRIGHTENED) {
             const gridClone = this.maze.gridPathfinding.clone();

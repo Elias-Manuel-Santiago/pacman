@@ -120,7 +120,7 @@ export class Pacman {
      * @param {number} progress - 0 a 1, controla la apertura de la boca
      */
     _redraw(progress) {
-        const radius = CELL_SIZE * 0.45;
+        const radius = CELL_SIZE * 0.55;
         const maxMouth = Math.PI * 0.25; // apertura máxima: 45°
 
         // Onda senoidal: la boca abre y cierra suavemente en cada tick.

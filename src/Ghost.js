@@ -204,7 +204,7 @@ export class Ghost {
      * TODO: reemplazar por Sprite/AnimatedSprite cuando haya assets.
      */
     _redraw() {
-        const r = CELL_SIZE * 0.42;
+        const r = CELL_SIZE * 0.55;
 
         // Color según estado
         let bodyColor;
