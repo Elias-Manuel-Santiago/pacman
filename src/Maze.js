@@ -4,9 +4,10 @@
 
 import { Graphics, Assets, Sprite, Texture, Rectangle, Container } from 'pixi.js';
 import { CELL, CELL_SIZE, COLS, ROWS, UI_HEIGHT } from './Grid.js';
+import { LEVEL_CONFIGS } from './LevelsConfig.js';
+import { tileMapping, tileMappingBorder, SPRITE_TILE_SIZE } from './tileMap.js';
 import PF from 'pathfinding';
 
-export const PACMAN_START = { x: 13, y: 23 };
 
 export const GHOST_CONFIGS = [
     { id: 0, x: 14, y: 11, name: 'Blinky', color: 0xff0000 },
@@ -15,41 +16,8 @@ export const GHOST_CONFIGS = [
     { id: 3, x: 16, y: 14, name: 'Clyde', color: 0xffa500 },
 ];
 
-export const TUNNEL_ROW = 14;
 
-const MAZE_ASCII = [
-    ' ############################ ',
-    ' #............##............# ',
-    ' #.####.#####.##.#####.####.# ',
-    ' #o####.#####.##.#####.####o# ',
-    ' #.####.#####.##.#####.####.# ',
-    ' #..........................# ',
-    ' #.####.##.########.##.####.# ',
-    ' #.####.##.########.##.####.# ',
-    ' #......##....##....##......# ',
-    ' ######.#####.##.#####.###### ',
-    ' ######.#####.##.#####.###### ',
-    ' ######.##..........##.###### ',
-    ' ######.##.        .##.###### ',
-    '#######.##.#------#.##.#######',
-    '       .   #HHHHHH#   .       ',
-    '#######.##.#HHHHHH#.##.#######',
-    ' ######.##.########.##.###### ',
-    ' ######.##          ##.###### ',
-    ' ######.##.########.##.###### ',
-    ' ######.##.########.##.###### ',
-    ' #............##............# ',
-    ' #.####.#####.##.#####.####.# ',
-    ' #.####.#####.##.#####.####.# ',
-    ' #o..##................##..o# ',
-    ' ###.##.##.########.##.##.### ',
-    ' ###.##.##.########.##.##.### ',
-    ' #......##....##....##......# ',
-    ' #.##########.##.##########.# ',
-    ' #.##########.##.##########.# ',
-    ' #..........................# ',
-    ' ############################ ',
-];
+
 
 export class Maze {
     /**
@@ -57,11 +25,13 @@ export class Maze {
      * @param {Object} [options]
      * @param {'full'|'half'|'none'} [options.pelletMode] - Cantidad de píldoras de poder
      */
-    constructor(container, options = {}) {
+    constructor(container, options = {}, level) {
         this.grid = [];
         this.gridPathfinding = null;
         this.totalOrbs = 0;
         this.pelletMode = options.pelletMode || 'full';
+
+        this.mazeData = LEVEL_CONFIGS[level].map;
 
         // Contenedores visuales
         this.wallContainer = new Container();
@@ -80,7 +50,7 @@ export class Maze {
     _parseAscii() {
         for (let y = 0; y < ROWS; y++) {
             this.grid[y] = [];
-            const row = MAZE_ASCII[y];
+            const row = this.mazeData.MAZE_ASCII[y];
 
             for (let x = 0; x < COLS; x++) {
                 const ch = row[x] ?? ' ';
@@ -98,7 +68,7 @@ export class Maze {
             }
         }
 
-        this.grid[PACMAN_START.y][PACMAN_START.x] = CELL.EMPTY;
+        this.grid[this.mazeData.PACMAN_START.y][this.mazeData.PACMAN_START.x] = CELL.EMPTY;
 
         this._applyPelletMode();
 
@@ -147,89 +117,10 @@ export class Maze {
 
         // El tamaño de cada sub-tile en el spritesheet original. 
         // Si tu spritesheet mide, por ejemplo, 16x16 px por cuadro en la imagen original:
-        const SPRITE_TILE_SIZE = 8;
-
         // Mapeo de coordenadas (Columna, Fila) en el spritesheet de 3 filas
         // Calculamos un índice binario simple basado en vecinos cardinales:
         // Celdas contiguas: Norte (1), Sur (2), Este (4), Oeste (8)
-        this.tileMapping = {
-            1: { cx: 2, cy: 0 }, // Casa este
-            2: { cx: 3, cy: 0 }, // Casa oeste
-            4: { cx: 10, cy: 0 }, // Casa norte
-            5: { cx: 13, cy: 1 }, // Casa sureste
-            6: { cx: 12, cy: 1 }, // Casa suroeste
-            7: { cx: 15, cy: 1 }, // Casa noreste
-            8: { cx: 14, cy: 1 }, // Casa noroeste
-
-            208: { cx: 7, cy: 2 }, // Este, Sur, Sureste
-            248: { cx: 14, cy: 0 }, // Este, Sur, Sureste, Oeste, Suroeste
-            104: { cx: 6, cy: 2 }, //Este, Sur, Suroeste
-            214: { cx: 9, cy: 1 }, // Norte, noreste, este,sur, sureste
-            107: { cx: 8, cy: 1 }, // Noroeste, norte, oeste, suroeste, sur
-            22: { cx: 11, cy: 1 }, // Norte, noreste, este
-            31: { cx: 4, cy: 1 }, // Oeste, Noroeste, norte, noreste, este
-            11: { cx: 8, cy: 2 }, // Noroeste, norte, oeste
-            215: { cx: 9, cy: 1 }, // Noroeste, norte, noreste, este, sur, sureste
-            111: { cx: 8, cy: 1 }, // Noroeste, norte, oeste, sur, suroeste, noreste
-            254: { cx: 5, cy: 2 }, // Todo menos noreste
-            252: { cx: 14, cy: 0 }, // Todo menos norte y noroeste
-            246: { cx: 9, cy: 1 }, // Todo menos noroeste y oeste
-            235: { cx: 8, cy: 1 }, // Todo menos noreste y este
-            249: { cx: 14, cy: 0 }, // Todo menos norte y noreste
-            159: { cx: 4, cy: 1 }, // Todo menos suroeste y sur
-            223: { cx: 3, cy: 2 }, // Todo menos suroeste
-            127: { cx: 2, cy: 2 }, // Todo menos sureste
-            63: { cx: 4, cy: 1 }, // Todo menos sureste y sur
-
-
-
-            255: { cx: 12, cy: 2 }, // Vacio
-        };
-
-        this.tileMappingBorder = {
-            151: { cx: 4, cy: 0 }, // Suroeste, sureste, noreste, sur, este
-            91: { cx: 5, cy: 0 }, // Noroeste, oeste, suroeste, sur, sureste
-            174: { cx: 0, cy: 0 }, // Noroeste, norte, noreste, este, sureste
-            109: { cx: 1, cy: 0 }, // Suroeste, oeste, noroeste, norte, noreste
-            19: { cx: 12, cy: 0 }, //Suroeste, sureste, sur
-            44: { cx: 10, cy: 0 }, //Noroeste, noreste, norte
-            73: { cx: 3, cy: 0 }, //Noroeste,oeste, suroeste
-            134: { cx: 2, cy: 0 }, //Noreste,este, sureste
-            1: { cx: 6, cy: 2 }, // Suroeste
-            2: { cx: 7, cy: 2 }, // Sureste
-            17: { cx: 12, cy: 0 }, // Suroeste, sur
-            18: { cx: 12, cy: 0 }, // Sureste, sur
-            65: { cx: 3, cy: 0 }, // Oeste, suroeste
-            65: { cx: 3, cy: 0 }, // Oeste, suroeste
-            72: { cx: 3, cy: 0 }, // Oeste, noroeste
-            40: { cx: 11, cy: 0 }, // Norte, noroeste
-            8: { cx: 10, cy: 1 }, // Noroeste
-            2: { cx: 7, cy: 1 }, // Sureste
-            4: { cx: 11, cy: 1 }, // Noreste
-            130: { cx: 2, cy: 0 }, // Este, sureste
-            132: { cx: 2, cy: 0 }, // Este, noreste
-            36: { cx: 11, cy: 0 }, // Norte, noreste
-            46: { cx: 11, cy: 0 }, // Norte, noreste, noroeste, sureste
-            23: { cx: 12, cy: 0 }, // Sur, suroeste, sureste, noreste
-            190: { cx: 11, cy: 0 }, // Todo menos oeste y suroeste
-            183: { cx: 12, cy: 0 }, // Todo menos oeste y noroeste
-            45: { cx: 11, cy: 0 }, // Norte, noreste, noroeste, suroeste
-            125: { cx: 11, cy: 0 }, // Todo menos este y sureste
-            27: { cx: 12, cy: 0 }, // Sur, sureste, suroeste, noroeste
-            123: { cx: 12, cy: 0 }, // Todo menos este y noreste
-            
-            200: { cx: 9, cy: 0 },
-            201: { cx: 7, cy: 0 },
-            202: { cx: 6, cy: 0 },
-            203: { cx: 8, cy: 0 },
-            204: { cx: 11, cy: 2 },
-            205: { cx: 10, cy: 2 },
-            206: { cx: 6, cy: 0 },
-            207: { cx: 7, cy: 0 },
-
-            256: { cx: 12, cy: 2 },
-
-        }
+       
 
         this._drawWalls(baseTexture, SPRITE_TILE_SIZE);
         this._drawOrbs();
@@ -320,7 +211,7 @@ export class Maze {
 
                         
                         // Obtener coordenadas en el spritesheet. Por defecto usa la caja sólida.
-                        const coords = this.tileMappingBorder[mask] || { cx: 4, cy: 2 };
+                        const coords = tileMappingBorder[mask] || { cx: 4, cy: 2 };
 
                         // Extraer el rectángulo exacto del archivo PNG
                         const rect = new Rectangle(

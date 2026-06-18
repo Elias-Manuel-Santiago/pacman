@@ -5,10 +5,7 @@
 // Cambiar CELL_SIZE reescala el juego entero sin tocar otra cosa.
 // Cambiar COLS/ROWS requiere rediseñar el laberinto en Maze.js.
 
-/** Cantidad de columnas del laberinto */
-export const COLS = 30;
-/** Cantidad de filas del laberinto */
-export const ROWS = 31;
+
 
 /** Alto de la barra HUD en píxeles (encima del área de juego) */
 export const UI_HEIGHT = 50;
@@ -55,6 +52,7 @@ export const CELL = {
     EMPTY:       3,  // ' '  espacio vacío y caminable
     GHOST_DOOR:  4,  // '-'  puerta de la casa de fantasmas (solo fantasmas pasan)
     GHOST_HOUSE: 5,  // 'H'  interior de la casa de fantasmas (solo fantasmas)
+    OUT_OF_BONDS: 6, // 'X'  limites personalizados para el spritesheet
 };
 
 // ── Estados de la IA de los fantasmas ────────────────────────

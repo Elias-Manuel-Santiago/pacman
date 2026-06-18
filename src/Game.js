@@ -19,6 +19,7 @@ import { Rojo } from './Rojo.js';
 import { Pink } from './Pink.js';
 import { Cyan } from './Cyan.js';
 import { Yellow } from './Yellow.js';
+import { LEVEL_CONFIGS } from './LevelsConfig.js';
 import { UI } from './UI.js';
 import {
     CANVAS_WIDTH,
@@ -48,13 +49,7 @@ const MAX_LEVEL = 5;
 //   ghostCount        → cuántos fantasmas se crean (en orden Rojo, Pink, Cyan, Yellow)
 //   pelletMode         → 'full' | 'half' | 'none' píldoras de poder
 //   ghostMoveInterval  → ms entre movimientos de fantasma (menor = más rápido)
-const LEVEL_CONFIGS = {
-    1: { ghostCount: 2, pelletMode: 'full', ghostMoveInterval: MOVE_INTERVAL_GHOST },
-    2: { ghostCount: 3, pelletMode: 'full', ghostMoveInterval: MOVE_INTERVAL_GHOST },
-    3: { ghostCount: 4, pelletMode: 'half', ghostMoveInterval: MOVE_INTERVAL_GHOST },
-    4: { ghostCount: 4, pelletMode: 'none', ghostMoveInterval: MOVE_INTERVAL_GHOST },
-    5: { ghostCount: 4, pelletMode: 'full', ghostMoveInterval: MOVE_INTERVAL_GHOST_FAST },
-};
+
 import PF from 'pathfinding'
 
 
