@@ -13,7 +13,7 @@ export const MAZE_ASCII = [
     ' XXXXX#.##..........##.#XXXXX ',
     ' XXXXX#.##.        .##.#XXXXX ',
     '#######.##.#------#.##.#######',
-    'X      .   #HHHHHH#   .      X',
+    ' X     .   #HHHHHH#   .     X ',
     '#######.##.#HHHHHH#.##.#######',
     ' XXXXX#.##.########.##.#XXXXX ',
     ' XXXXX#.##          ##.#XXXXX ',

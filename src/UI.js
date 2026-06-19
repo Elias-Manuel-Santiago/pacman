@@ -7,13 +7,13 @@
 //   • Overlay de Victoria (todos los orbes recolectados)
 
 import { Container, Graphics, Text } from 'pixi.js';
-import { CANVAS_WIDTH, CANVAS_HEIGHT, UI_HEIGHT, CELL_SIZE } from './Grid.js';
+import { CANVAS_HEIGHT, UI_HEIGHT } from './Grid.js';
 
 export class UI {
     /**
      * @param {import('pixi.js').Container} stage - Stage principal de Pixi
      */
-    constructor(stage) {
+    constructor(stage, CANVAS_WIDTH, CELL_SIZE) {
         // ── HUD superior ──────────────────────────────────────
         this.hudContainer = new Container();
         stage.addChild(this.hudContainer);

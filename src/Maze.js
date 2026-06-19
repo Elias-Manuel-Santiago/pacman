@@ -3,18 +3,13 @@
 // ============================================================
 
 import { Graphics, Assets, Sprite, Texture, Rectangle, Container } from 'pixi.js';
-import { CELL, CELL_SIZE, COLS, ROWS, UI_HEIGHT } from './Grid.js';
+import { CELL, UI_HEIGHT, calcCellSize } from './Grid.js';
 import { LEVEL_CONFIGS } from './LevelsConfig.js';
 import { tileMapping, tileMappingBorder, SPRITE_TILE_SIZE } from './tileMap.js';
 import PF from 'pathfinding';
 
 
-export const GHOST_CONFIGS = [
-    { id: 0, x: 14, y: 11, name: 'Blinky', color: 0xff0000 },
-    { id: 1, x: 14, y: 14, name: 'Pinky', color: 0xff69b4 },
-    { id: 2, x: 16, y: 14, name: 'Inky', color: 0x00ffff },
-    { id: 3, x: 16, y: 14, name: 'Clyde', color: 0xffa500 },
-];
+
 
 
 
@@ -33,6 +28,10 @@ export class Maze {
 
         this.mazeData = LEVEL_CONFIGS[level].map;
 
+        this.ROWS = this.mazeData.ROWS;
+        this.COLS = this.mazeData.COLS;
+        this.CELL_SIZE = calcCellSize(this.ROWS);
+
         // Contenedores visuales
         this.wallContainer = new Container();
         this.orbGraphics = new Graphics();
@@ -48,11 +47,11 @@ export class Maze {
     }
 
     _parseAscii() {
-        for (let y = 0; y < ROWS; y++) {
+        for (let y = 0; y < this.ROWS; y++) {
             this.grid[y] = [];
             const row = this.mazeData.MAZE_ASCII[y];
 
-            for (let x = 0; x < COLS; x++) {
+            for (let x = 0; x < this.COLS; x++) {
                 const ch = row[x] ?? ' ';
                 let cell;
 
@@ -62,6 +61,7 @@ export class Maze {
                     case 'o': cell = CELL.PELLET; this.totalOrbs++; break;
                     case '-': cell = CELL.GHOST_DOOR; break;
                     case 'H': cell = CELL.GHOST_HOUSE; break;
+                    case 'X': cell = CELL.OUT_OF_BONDS; break;
                     default: cell = CELL.EMPTY; break;
                 }
                 this.grid[y][x] = cell;
@@ -73,9 +73,9 @@ export class Maze {
         this._applyPelletMode();
 
         const pfMatrix = [];
-        for (let y = 0; y < ROWS; y++) {
+        for (let y = 0; y < this.ROWS; y++) {
             pfMatrix[y] = [];
-            for (let x = 0; x < COLS; x++) {
+            for (let x = 0; x < this.COLS; x++) {
                 pfMatrix[y][x] = this.grid[y][x] === CELL.WALL ? 1 : 0;
             }
         }
@@ -93,8 +93,8 @@ export class Maze {
         if (this.pelletMode === 'full') return;
 
         const pelletPositions = [];
-        for (let y = 0; y < ROWS; y++) {
-            for (let x = 0; x < COLS; x++) {
+        for (let y = 0; y < this.ROWS; y++) {
+            for (let x = 0; x < this.COLS; x++) {
                 if (this.grid[y][x] === CELL.PELLET) pelletPositions.push({ x, y });
             }
         }
@@ -120,7 +120,7 @@ export class Maze {
         // Mapeo de coordenadas (Columna, Fila) en el spritesheet de 3 filas
         // Calculamos un índice binario simple basado en vecinos cardinales:
         // Celdas contiguas: Norte (1), Sur (2), Este (4), Oeste (8)
-       
+
 
         this._drawWalls(baseTexture, SPRITE_TILE_SIZE);
         this._drawOrbs();
@@ -138,34 +138,28 @@ export class Maze {
             let checky = y + DIR[i][1];
 
 
-            if (checkx <= 0 || checkx >= COLS - 1 || checky < 0 || checky >= ROWS) {
+            if (checkx <= 0 || checkx >= this.COLS - 1 || checky < 0 || checky >= this.ROWS) {
                 return true;
             }
-            if ((checky >= 10 && checky <= 12) || (checky >= 16 && checky <= 18)) {
-                if ((checkx >= 1 && checkx <= 5) || (checkx >= 24 && checkx <= 28)) return true;
-            }
-            if ((x == 1 || x == 28) && y == 14) return true;
+            if (this.grid[checky][checkx] === CELL.OUT_OF_BONDS) return true;
         }
         return false;
     }
 
     _isOutOfBounds(x, y) {
-        if (x <= 0 || x >= COLS - 1 || y < 0 || y >= ROWS) return true;
-        if ((y >= 10 && y <= 12) || (y >= 16 && y <= 18)) {
-            if ((x >= 1 && x <= 5) || (x >= 24 && x <= 28)) return true;
-        }
-        if ((x == 1 || x == 28) && y == 14) return true;
+        if (x <= 0 || x >= this.COLS - 1 || y < 0 || y >= this.ROWS) return true;
+        if (this.grid[y][x] === CELL.OUT_OF_BONDS) return true;
         return false;
     }
     /** Retorna si una coordenada dentro o fuera del mapa actúa como muro para el autotiling */
     _isWallAt(x, y) {
         // Los bordes exteriores extremos cuentan como muro para cerrar los sprites del perímetro
-        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return true;
+        if (x < 0 || x >= this.COLS || y < 0 || y >= this.ROWS) return true;
         return this.grid[y][x] === CELL.WALL;
     }
 
     _isGhostHouse(x, y) {
-        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+        if (x < 0 || x >= this.COLS || y < 0 || y >= this.ROWS) return true;
         return this.grid[y][x] === CELL.GHOST_HOUSE;
     }
 
@@ -178,10 +172,10 @@ export class Maze {
         const proceduralGraphics = new Graphics();
         this.wallContainer.addChild(proceduralGraphics);
 
-        for (let y = 0; y < ROWS; y++) {
-            for (let x = 0; x < COLS; x++) {
-                const px = x * CELL_SIZE;
-                const py = y * CELL_SIZE + UI_HEIGHT;
+        for (let y = 0; y < this.ROWS; y++) {
+            for (let x = 0; x < this.COLS; x++) {
+                const px = x * this.CELL_SIZE;
+                const py = y * this.CELL_SIZE + UI_HEIGHT;
 
                 if (this.grid[y][x] === CELL.WALL) {
                     // Calcular máscara binaria de los 8 vecinos cardinales
@@ -197,19 +191,19 @@ export class Maze {
                         if (this._isOutOfBounds(x - 1, y)) mask += 64; // Oeste
                         if (this._isOutOfBounds(x + 1, y)) mask += 128; // Este
 
-                        if(mask == 73 && this._isWallAt(x + 1, y - 1) && this._isWallAt(x + 1, y)) mask = 200;
-                        if(mask == 73 && this._isWallAt(x + 1, y + 1) && this._isWallAt(x + 1, y)) mask = 201;
-                        if(mask == 134 && this._isWallAt(x - 1, y + 1) && this._isWallAt(x - 1, y)) mask = 202;
-                        if(mask == 134 && this._isWallAt(x - 1, y - 1) && this._isWallAt(x - 1, y)) mask = 203;
-                        if(mask == 44 && this._isWallAt(x + 1, y + 1) && this._isWallAt(x, y + 1)) mask = 204;
-                        if(mask == 44 && this._isWallAt(x - 1, y + 1) && this._isWallAt(x, y + 1)) mask = 205;
-                        if(mask == 19 && this._isWallAt(x + 1, y - 1) && this._isWallAt(x, y - 1)) mask = 206;
-                        if(mask == 19 && this._isWallAt(x - 1, y - 1) && this._isWallAt(x, y - 1)) mask = 207;
+                        if (mask == 73 && this._isWallAt(x + 1, y - 1) && this._isWallAt(x + 1, y)) mask = 200;
+                        if (mask == 73 && this._isWallAt(x + 1, y + 1) && this._isWallAt(x + 1, y)) mask = 201;
+                        if (mask == 134 && this._isWallAt(x - 1, y + 1) && this._isWallAt(x - 1, y)) mask = 202;
+                        if (mask == 134 && this._isWallAt(x - 1, y - 1) && this._isWallAt(x - 1, y)) mask = 203;
+                        if (mask == 44 && this._isWallAt(x + 1, y + 1) && this._isWallAt(x, y + 1)) mask = 204;
+                        if (mask == 44 && this._isWallAt(x - 1, y + 1) && this._isWallAt(x, y + 1)) mask = 205;
+                        if (mask == 19 && this._isWallAt(x + 1, y - 1) && this._isWallAt(x, y - 1)) mask = 206;
+                        if (mask == 19 && this._isWallAt(x - 1, y - 1) && this._isWallAt(x, y - 1)) mask = 207;
 
 
                         if (this._isOutOfBounds(x, y)) mask = 256; // Vacio
+                        console.log(x + ', ' + y + ' mask: ' + mask);
 
-                        
                         // Obtener coordenadas en el spritesheet. Por defecto usa la caja sólida.
                         const coords = tileMappingBorder[mask] || { cx: 4, cy: 2 };
 
@@ -226,16 +220,16 @@ export class Maze {
                             frame: rect
                         });
 
-                        
+
 
                         const wallSprite = new Sprite(tileTexture);
-                        
+
 
                         wallSprite.x = px;
                         wallSprite.y = py;
-                        // Escalar el sprite de forma exacta al CELL_SIZE de tu juego
-                        wallSprite.width = CELL_SIZE;
-                        wallSprite.height = CELL_SIZE;
+                        // Escalar el sprite de forma exacta al this.CELL_SIZE de tu juego
+                        wallSprite.width = this.CELL_SIZE;
+                        wallSprite.height = this.CELL_SIZE;
 
                         this.wallContainer.addChild(wallSprite);
                     } else {
@@ -260,10 +254,10 @@ export class Maze {
                         if (this._isGhostHouse(x, y - 1)) mask = 4;
 
 
-                        
+
 
                         // Obtener coordenadas en el spritesheet. Por defecto usa la caja sólida.
-                        const coords = this.tileMapping[mask] || { cx: 4, cy: 2 };
+                        const coords = tileMapping[mask] || { cx: 4, cy: 2 };
 
                         // Extraer el rectángulo exacto del archivo PNG
                         const rect = new Rectangle(
@@ -281,21 +275,21 @@ export class Maze {
                         const wallSprite = new Sprite(tileTexture);
                         wallSprite.x = px;
                         wallSprite.y = py;
-                        // Escalar el sprite de forma exacta al CELL_SIZE de tu juego
-                        wallSprite.width = CELL_SIZE;
-                        wallSprite.height = CELL_SIZE;
+                        // Escalar el sprite de forma exacta al this.CELL_SIZE de tu juego
+                        wallSprite.width = this.CELL_SIZE;
+                        wallSprite.height = this.CELL_SIZE;
 
                         this.wallContainer.addChild(wallSprite);
 
                     }
                 } else if (this.grid[y][x] === CELL.GHOST_DOOR) {
                     // Conservamos el estilo original para la puerta rosa de la casa
-                    proceduralGraphics.rect(px, py + Math.round(CELL_SIZE * 0.35), CELL_SIZE, Math.round(CELL_SIZE * 0.3));
+                    proceduralGraphics.rect(px, py + Math.round(this.CELL_SIZE * 0.35), this.CELL_SIZE, Math.round(this.CELL_SIZE * 0.3));
                     proceduralGraphics.fill(0xff99cc);
 
                 } else if (this.grid[y][x] === CELL.GHOST_HOUSE) {
                     // Fondo oscuro interior casa
-                    proceduralGraphics.rect(px, py, CELL_SIZE, CELL_SIZE);
+                    proceduralGraphics.rect(px, py, this.CELL_SIZE, this.CELL_SIZE);
                     proceduralGraphics.fill(0x110022);
                 }
 
@@ -307,10 +301,10 @@ export class Maze {
     _drawOrbs() {
         this.orbGraphics.clear();
 
-        for (let y = 0; y < ROWS; y++) {
-            for (let x = 0; x < COLS; x++) {
-                const cx = x * CELL_SIZE + CELL_SIZE / 2;
-                const cy = y * CELL_SIZE + CELL_SIZE / 2 + UI_HEIGHT;
+        for (let y = 0; y < this.ROWS; y++) {
+            for (let x = 0; x < this.COLS; x++) {
+                const cx = x * this.CELL_SIZE + this.CELL_SIZE / 2;
+                const cy = y * this.CELL_SIZE + this.CELL_SIZE / 2 + UI_HEIGHT;
 
                 if (this.grid[y][x] === CELL.ORB) {
                     this.orbGraphics.circle(cx, cy, 2);
@@ -324,13 +318,13 @@ export class Maze {
     }
 
     isWalkable(x, y) {
-        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+        if (x < 0 || x >= this.COLS || y < 0 || y >= this.ROWS) return false;
         const c = this.grid[y][x];
         return c !== CELL.WALL && c !== CELL.GHOST_DOOR && c !== CELL.GHOST_HOUSE;
     }
 
     isGhostWalkable(x, y) {
-        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+        if (x < 0 || x >= this.COLS || y < 0 || y >= this.ROWS) return false;
         return this.grid[y][x] !== CELL.WALL;
     }
 
@@ -346,8 +340,8 @@ export class Maze {
 
     countRemainingOrbs() {
         let count = 0;
-        for (let y = 0; y < ROWS; y++) {
-            for (let x = 0; x < COLS; x++) {
+        for (let y = 0; y < this.ROWS; y++) {
+            for (let x = 0; x < this.COLS; x++) {
                 const c = this.grid[y][x];
                 if (c === CELL.ORB || c === CELL.PELLET) count++;
             }

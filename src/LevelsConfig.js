@@ -1,12 +1,13 @@
 import * as mapa1 from './mapas/mapalvl1.js';
-
+import { MOVE_INTERVAL_GHOST, MOVE_INTERVAL_GHOST_FAST } from './Grid.js';
 
 
 export const LEVEL_CONFIGS = {
     1: { 
-        ghostCount: 2, pelletMode: 'full', 
+        ghostCount: 2, 
+        pelletMode: 'full', 
         ghostMoveInterval: MOVE_INTERVAL_GHOST,
-        map = mapa1,
+        map: mapa1,
     },
     2: { ghostCount: 3, pelletMode: 'full', ghostMoveInterval: MOVE_INTERVAL_GHOST },
     3: { ghostCount: 4, pelletMode: 'half', ghostMoveInterval: MOVE_INTERVAL_GHOST },
