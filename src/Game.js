@@ -394,6 +394,7 @@ _start() {
     }
 
     destroy() {
+        this.state = 'destroyed';
         this.app.ticker.remove(this._onTick);
         this._clearScene();
     }

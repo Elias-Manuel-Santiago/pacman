@@ -294,7 +294,7 @@ export class Maze {
 
     _drawOrbs() {
         if (!this.orbGraphics || this.orbGraphics.destroyed) return;
-        
+
         this.orbGraphics.clear();
 
         // Calculamos los radios de forma dinámica para que se adapten al CELL_SIZE
@@ -350,7 +350,13 @@ export class Maze {
     }
 
     destroy() {
-        this.wallContainer.destroy({ children: true });
-        this.orbGraphics.destroy();
+        if (this.wallContainer) {
+            this.wallContainer.destroy({ children: true });
+            this.wallContainer = null;
+        }
+        if (this.orbGraphics) {
+            this.orbGraphics.destroy();
+            this.orbGraphics = null;
+        }
     }
 }
