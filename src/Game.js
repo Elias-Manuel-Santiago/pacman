@@ -51,12 +51,16 @@ export class Game {
 
     // ── Ciclo de vida ─────────────────────────────────────────
 
-    _start() {
-        this.level = 5;
-        this.score = 0;
-        this.lives = 1;
-        this._buildLevel();
+// En tu Game.js busca el método _start y cámbialo para que no sobreescriba tu nivel:
+_start() {
+    // Si ya viene predefinido por el VersusGame no lo reseteamos a 5
+    if (!this.level) {
+        this.level = 1; 
     }
+    this.score = 0;
+    this.lives = 1; // O las vidas iniciales de tu preferencia
+    this._buildLevel();
+}
 
     _nextLevel() {
         if (this.level >= MAX_LEVEL) {

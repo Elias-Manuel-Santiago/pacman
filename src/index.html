@@ -54,9 +54,24 @@
     </div>
 
     <!-- CENTRO: Pantalla de juego (oculta hasta que empieza) -->
-    <main class="game-layout hidden" id="main-game-layout">
+    <main class="game-layout hidden" id="main-game-layout" style="position: relative;">
 
-        <!-- HUD externo: score y nivel encima del canvas -->
+        <div id="versus-turn-overlay" class="versus-overlay-container hidden">
+            <h2 id="vs-player-title" class="versus-overlay-title">TURNO DE JUGADOR 1</h2>
+            <p class="versus-overlay-subtitle">PREPÁRATE PARA ARRANCAR</p>
+
+            <div class="retro-panel" style="margin-bottom: 20px; background: #000; padding: 15px;">
+                <ul class="controls-list" style="text-align: left;">
+                    <li><span class="key">W</span><span class="key">↑</span> ARRIBA</li>
+                    <li><span class="key">S</span><span class="key">↓</span> ABAJO</li>
+                    <li><span class="key">A</span><span class="key">←</span> IZQUIERDA</li>
+                    <li><span class="key">D</span><span class="key">→</span> DERECHA</li>
+                </ul>
+            </div>
+
+            <button id="btn-versus-ready" class="btn-arcade" style="max-width: 200px;">JUGAR</button>
+        </div>
+
         <div class="game-hud">
             <p class="hud-score">SCORE: <span id="hud-score-value">0</span></p>
             <p class="hud-level">NIVEL <span id="hud-level-value">1</span></p>
@@ -68,8 +83,15 @@
 
     </main>
 
+    <div class="retro-panel leaderboard-panel" id="right-panel-container">
+        <h2 class="panel-title">TOP RANK</h2>
+        <table class="leaderboard-table">
+            ...
+        </table>
+    </div>
+
     <!-- DERECHA: Leaderboard -->
-    <div class="retro-panel leaderboard-panel">
+    <div class="retro-panel leaderboard-panel" id="top_ranking">
         <h2 class="panel-title">TOP RANK</h2>
         <table class="leaderboard-table">
             <thead>
