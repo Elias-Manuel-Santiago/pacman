@@ -29,6 +29,10 @@ export const tileMapping = {
     223: { cx: 3, cy: 2 }, // Todo menos suroeste
     127: { cx: 2, cy: 2 }, // Todo menos sureste
     63: { cx: 4, cy: 1 }, // Todo menos sureste y sur
+    247: { cx: 9, cy: 1 }, // Todo menos oeste
+    239: { cx: 8, cy: 1 }, // Todo menos este
+    15: { cx: 10, cy: 1 }, // O, NO, N, NE
+    23: { cx: 11, cy: 1 }, // E, NO, N, NE
 
 
 
@@ -73,8 +77,8 @@ export const tileMappingBorder = {
     203: { cx: 8, cy: 0 },
     204: { cx: 11, cy: 2 },
     205: { cx: 10, cy: 2 },
-    206: { cx: 6, cy: 0 },
-    207: { cx: 7, cy: 0 },
+    206: { cx: 13, cy: 2 },
+    207: { cx: 14, cy: 2 },
 
     256: { cx: 12, cy: 2 },
 

@@ -4,7 +4,7 @@
 
 import { Graphics } from 'pixi.js';
 import { Maze } from './Maze.js';
-import { Pacman } from './Pacman.js';
+import { Pacman, DIRECTION } from './Pacman.js';
 import { Rojo } from './Rojo.js';
 import { Pink } from './Pink.js';
 import { Cyan } from './Cyan.js';
@@ -26,20 +26,21 @@ import {
 import PF from 'pathfinding';
 
 const STATE = {
-    PLAYING:   'playing',
+    PLAYING: 'playing',
     GAME_OVER: 'game_over',
-    WIN:       'win',
+    WIN: 'win',
 };
 
 const MAX_LEVEL = 5;
 
 export class Game {
-    constructor(app) {
+    constructor(app, settings) {
         this.app = app;
+        this.gameSettings = settings;
 
-        this.timeSinceLastMove      = 0;
-        this.inputDirection         = { x: 0, y: 0 };
-        this.ghostsEatenThisPellet  = 0;
+        this.timeSinceLastMove = 0;
+        this.inputDirection = { x: 0, y: 0 };
+        this.ghostsEatenThisPellet = 0;
 
         this._setupInput();
         this._start();
@@ -51,7 +52,7 @@ export class Game {
     // ── Ciclo de vida ─────────────────────────────────────────
 
     _start() {
-        this.level = 1;
+        this.level = 5;
         this.score = 0;
         this.lives = 1;
         this._buildLevel();
@@ -70,15 +71,14 @@ export class Game {
     _buildLevel() {
         this._clearScene();
 
-        this.state                 = STATE.PLAYING;
-        this.timeSinceLastMove     = 0;
+        this.state = STATE.PLAYING;
+        this.timeSinceLastMove = 0;
         this.ghostsEatenThisPellet = 0;
-        this.inputDirection        = { x: 0, y: 0 };
+        this.inputDirection = DIRECTION.NONE;
 
         this.config = LEVEL_CONFIGS[this.level];
 
-        // Derivar dimensiones del mapa del nivel actual
-        this.CELL_SIZE    = calcCellSize(this.config.map.ROWS);
+        this.CELL_SIZE = calcCellSize(this.config.map.ROWS);
         this.CANVAS_WIDTH = calcCanvasWidth(this.config.map.COLS, this.CELL_SIZE);
 
         this.PACMAN_START = this.config.map.PACMAN_START;
@@ -99,11 +99,12 @@ export class Game {
             this.CELL_SIZE,
         );
 
+        const corners = this.config.map.GHOST_CORNERS;
         const ghostBuilders = [
-            () => new Rojo(   this.app.stage, 0, this.GHOST_STARTS[0].x, this.GHOST_STARTS[0].y, 0xff0000, 'rojito',     this.CELL_SIZE),
-            () => new Pink(   this.app.stage, 1, this.GHOST_STARTS[1].x, this.GHOST_STARTS[1].y, 0xff69b4, 'rosita',     this.CELL_SIZE),
-            () => new Cyan(   this.app.stage, 2, this.GHOST_STARTS[2].x, this.GHOST_STARTS[2].y, 0x00ffff, 'celestito',  this.CELL_SIZE),
-            () => new Yellow( this.app.stage, 3, this.GHOST_STARTS[3].x, this.GHOST_STARTS[3].y, 0xffa500, 'amarillito', this.CELL_SIZE),
+            () => new Rojo(this.app.stage, 0, this.GHOST_STARTS[0].x, this.GHOST_STARTS[0].y, 0xff0000, 'rojito', this.CELL_SIZE, corners[0], this.maze),
+            () => new Pink(this.app.stage, 1, this.GHOST_STARTS[1].x, this.GHOST_STARTS[1].y, 0xff69b4, 'rosita', this.CELL_SIZE, corners[1], this.maze),
+            () => new Cyan(this.app.stage, 2, this.GHOST_STARTS[2].x, this.GHOST_STARTS[2].y, 0x00ffff, 'celestito', this.CELL_SIZE, corners[2], this.maze),
+            () => new Yellow(this.app.stage, 3, this.GHOST_STARTS[3].x, this.GHOST_STARTS[3].y, 0xffa500, 'amarillito', this.CELL_SIZE, corners[3], this.maze),
         ];
         this.ghosts = ghostBuilders.slice(0, this.config.ghostCount).map((build) => build());
 
@@ -114,25 +115,28 @@ export class Game {
         this.ui.updateScore(this.score);
         this.ui.updateLives(this.lives);
         this.ui.updateLevel(this.level);
+
+        this._resize();
     }
 
     _clearScene() {
         if (this.background) this.background.destroy();
-        if (this.maze)    this.maze.destroy();
-        if (this.pacman)  this.pacman.destroy();
-        if (this.ghosts)  this.ghosts.forEach((g) => g.destroy());
-        if (this.ui)      this.ui.destroy();
+        if (this.maze) this.maze.destroy();
+        if (this.pacman) this.pacman.destroy();
+        if (this.ghosts) this.ghosts.forEach((g) => g.destroy());
+        if (this.ui) this.ui.destroy();
 
         this.background = null;
-        this.maze    = null;
-        this.pacman  = null;
-        this.ghosts  = [];
-        this.ui      = null;
+        this.maze = null;
+        this.pacman = null;
+        this.ghosts = [];
+        this.ui = null;
     }
 
     _createBackground() {
         this.background = new Graphics();
-        this.background.rect(0, UI_HEIGHT, this.CANVAS_WIDTH, CANVAS_HEIGHT - UI_HEIGHT);
+        // El canvas ya no tiene barra HUD interna: ocupa todo el alto
+        this.background.rect(0, 0, this.CANVAS_WIDTH, CANVAS_HEIGHT);
         this.background.fill(0x000000);
         this.app.stage.addChildAt(this.background, 0);
     }
@@ -151,12 +155,41 @@ export class Game {
             }
 
             switch (e.code) {
-                case 'ArrowLeft':  case 'KeyA': this.inputDirection = { x: -1, y:  0 }; break;
-                case 'ArrowRight': case 'KeyD': this.inputDirection = { x:  1, y:  0 }; break;
-                case 'ArrowUp':    case 'KeyW': this.inputDirection = { x:  0, y: -1 }; break;
-                case 'ArrowDown':  case 'KeyS': this.inputDirection = { x:  0, y:  1 }; break;
+                case 'ArrowLeft': case 'KeyA': this.inputDirection = DIRECTION.LEFT; break;
+                case 'ArrowRight': case 'KeyD': this.inputDirection = DIRECTION.RIGHT; break;
+                case 'ArrowUp': case 'KeyW': this.inputDirection = DIRECTION.UP; break;
+                case 'ArrowDown': case 'KeyS': this.inputDirection = DIRECTION.DOWN; break;
             }
         });
+        // --- Input Táctil (Swipe y Tap) ---
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        window.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+
+            // Si el movimiento es muy pequeño, se considera un "Tap" (toque)
+            if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+                if (this.state !== STATE.PLAYING) {
+                    this._start();
+                }
+                return;
+            }
+
+            if (this.state !== STATE.PLAYING) return;
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                this.inputDirection = dx > 0 ? DIRECTION.RIGHT : DIRECTION.LEFT;
+            } else {
+                this.inputDirection = dy > 0 ? DIRECTION.DOWN : DIRECTION.UP;
+            }
+        }, { passive: true });
     }
 
     // ── Loop principal ────────────────────────────────────────
@@ -235,6 +268,7 @@ export class Game {
 
         switch (ghost.id) {
             case 0:
+                console.log(ghost.state);
                 if (ghost.state === GHOST_STATE.HOUSE) break;
                 if (ghost.state === GHOST_STATE.SCATTER) {
                     ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone());
@@ -336,24 +370,23 @@ export class Game {
         }
 
         this.ghostsEatenThisPellet = 0;
-        this.inputDirection        = { x: 0, y: 0 };
-        this.timeSinceLastMove     = 0;
+        this.inputDirection = DIRECTION.NONE;
+        this.timeSinceLastMove = 0;
     }
 
     /**
-     * Centra y escala el stage para ajustarse a la ventana.
-     * Llamado desde main.js en cada resize y al inicio.
+     * Centra y escala el stage para ajustarse al contenedor.
+     * Sin barra interna: el canvas ocupa todo CANVAS_HEIGHT.
      */
     _resize() {
         if (!this.CANVAS_WIDTH) return;
-        const gameHeight = CANVAS_HEIGHT + UI_HEIGHT;
-        const scaleX = this.app.screen.width  / this.CANVAS_WIDTH;
-        const scaleY = this.app.screen.height / gameHeight;
-        const scale  = Math.min(scaleX, scaleY);
+        const scaleX = this.app.screen.width / this.CANVAS_WIDTH;
+        const scaleY = this.app.screen.height / CANVAS_HEIGHT;
+        const scale = Math.min(scaleX, scaleY);
 
         this.app.stage.scale.set(scale);
-        this.app.stage.x = (this.app.screen.width  - this.CANVAS_WIDTH * scale) / 2;
-        this.app.stage.y = (this.app.screen.height - gameHeight         * scale) / 2;
+        this.app.stage.x = (this.app.screen.width - this.CANVAS_WIDTH * scale) / 2;
+        this.app.stage.y = (this.app.screen.height - CANVAS_HEIGHT * scale) / 2;
     }
 
     destroy() {

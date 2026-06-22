@@ -12,7 +12,7 @@ export default (_env, argv) => {
     // Your build destination
     output: {
       path: path.resolve(process.cwd(), "dist"),
-      filename: "bundle.js",
+      filename: "main.js",
       clean: true,
     },
 
@@ -54,24 +54,34 @@ export default (_env, argv) => {
     },
 
     module: {
-      rules: [],
-    },
+      rules: [
+        {
+          test: /\.css$/i,
+          use: ['style-loader', 'css-loader'], // Procesa el CSS y lo inyecta en el DOM
+        },
+        {
+          test: /\.html$/i,
+          use: "html-loader", // Procesa el CSS y lo inyecta en el DOM
+        },
+      ],
+  },
+
     resolve: {
-      extensions: [".js", ".jsx"],
+    extensions: [".js", ".jsx"],
     },
 
-    plugins: [
-      // Copy our static assets to the final build
-      new CopyPlugin({
-        patterns: [{ from: "public/" }],
-      }),
+  plugins: [
+    // Copy our static assets to the final build
+    new CopyPlugin({
+      patterns: [{ from: "public/" }],
+    }),
 
-      // Make an index.html from the template
-      new HtmlWebpackPlugin({
-        template: "./index.ejs",
-        hash: true,
-        minify: false,
-      }),
-    ],
+    // Make an index.html from the template
+    new HtmlWebpackPlugin({
+      template: "./index.ejs",
+      hash: true,
+      minify: false,
+    }),
+  ],
   };
 };

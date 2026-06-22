@@ -1,0 +1,50 @@
+/* ============================================================
+   main.css — Variables, resets y temas
+   ============================================================ */
+
+:root {
+    --font-retro: 'Press Start 2P', monospace;
+    --transition-speed: 0.3s;
+}
+
+/* Variables de Color - Tema Noche (Predeterminado) */
+.theme-night {
+    --bg-main: #0c0c14;
+    --bg-panel: #161624;
+    --border-retro: #222546;
+    --text-primary: #ffffff;
+    --text-secondary: #ffb8ae;
+    --accent: #ffff00;
+    --accent-danger: #ff2222;
+}
+
+/* Variables de Color - Tema Día */
+.theme-day {
+    --bg-main: #e2e8f0;
+    --bg-panel: #ffffff;
+    --border-retro: #94a3b8;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --accent: #2563eb;
+    --accent-danger: #dc2626;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-retro);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.hidden {
+    display: none !important;
+}

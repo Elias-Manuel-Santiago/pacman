@@ -1,0 +1,112 @@
+<div class="app-container">
+
+    <!-- IZQUIERDA: Controles -->
+    <aside class="sidebar-column">
+        <div class="retro-panel controls-panel">
+            <h2 class="panel-title">CONTROLES</h2>
+            <ul class="controls-list">
+                <li><span class="key">W</span><span class="key">↑</span> ARRIBA</li>
+                <li><span class="key">S</span><span class="key">↓</span> ABAJO</li>
+                <li><span class="key">A</span><span class="key">←</span> IZQUIERDA</li>
+                <li><span class="key">D</span><span class="key">→</span> DERECHA</li>
+                <li><span class="key">SPACE</span> REINICIAR</li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- CENTRO: Menú de selección -->
+    <div id="start-screen" class="menu-overlay wide-menu">
+        <h1 class="game-title">PAC-MAN</h1>
+
+        <div class="modes-wrapper">
+
+            <div class="mode-column">
+                <h2 class="mode-title">SINGLEPLAYER</h2>
+                <form id="form-singleplayer" class="retro-form">
+                    <div class="inputs-container">
+                        <div class="input-group">
+                            <label for="player1-single">JUGADOR:</label>
+                            <input type="text" id="player1-single" maxlength="10" placeholder="AAA" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-arcade">JUGAR</button>
+                </form>
+            </div>
+
+            <div class="mode-column">
+                <h2 class="mode-title">1 VS 1</h2>
+                <form id="form-versus" class="retro-form">
+                    <div class="inputs-container">
+                        <div class="input-group">
+                            <label for="player1-versus">JUGADOR 1:</label>
+                            <input type="text" id="player1-versus" maxlength="10" placeholder="AAA" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="player2-versus">JUGADOR 2:</label>
+                            <input type="text" id="player2-versus" maxlength="10" placeholder="BBB" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-arcade">JUGAR VS</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CENTRO: Pantalla de juego (oculta hasta que empieza) -->
+    <main class="game-layout hidden" id="main-game-layout">
+
+        <!-- HUD externo: score y nivel encima del canvas -->
+        <div class="game-hud">
+            <p class="hud-score">SCORE: <span id="hud-score-value">0</span></p>
+            <p class="hud-level">NIVEL <span id="hud-level-value">1</span></p>
+        </div>
+
+        <section class="game-column">
+            <div id="pixi-game" class="canvas-wrapper"></div>
+        </section>
+
+    </main>
+
+    <!-- DERECHA: Leaderboard -->
+    <div class="retro-panel leaderboard-panel">
+        <h2 class="panel-title">TOP RANK</h2>
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>POS</th>
+                    <th>NAME</th>
+                    <th>SCORE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="rank-1">
+                    <td>1ST</td>
+                    <td>PAC</td>
+                    <td>99990</td>
+                </tr>
+                <tr class="rank-2">
+                    <td>2ND</td>
+                    <td>WAK</td>
+                    <td>75000</td>
+                </tr>
+                <tr class="rank-3">
+                    <td>3RD</td>
+                    <td>GHO</td>
+                    <td>52300</td>
+                </tr>
+                <tr>
+                    <td>4TH</td>
+                    <td>AAA</td>
+                    <td>21000</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<button id="theme-toggle" class="btn-theme" aria-label="Cambiar tema">
+    <span class="icon-sun">☀️</span>
+    <span class="icon-moon">🌙</span>
+</button>

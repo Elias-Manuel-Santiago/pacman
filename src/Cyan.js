@@ -3,10 +3,10 @@ import { Ghost } from './Ghost.js';
 import PF from 'pathfinding';
 
 export class Cyan extends Ghost {
-    constructor(container, id, startX, startY, color, name, cellSize) {
-        super(container, id, startX, startY, color, name, cellSize);
+    constructor(container, id, startX, startY, color, name, cellSize, esquina, maze) {
+        super(container, id, startX, startY, color, name, cellSize, maze);
         this.firstScatterDone = false;
-        this.esquina = { x: 27, y: 29 };
+        this.esquina = esquina;
         this.wait(8000);
     }
 

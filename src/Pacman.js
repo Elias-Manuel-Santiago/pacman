@@ -3,7 +3,15 @@
 // ============================================================
 
 import { Graphics } from 'pixi.js';
-import { UI_HEIGHT, lerp } from './Grid.js';
+import { lerp } from './Grid.js';
+
+export const DIRECTION = {
+    UP: { x: 0, y: -1 },
+    DOWN: { x: 0, y: 1 },
+    LEFT: { x: -1, y: 0 },
+    RIGHT: { x: 1, y: 0 },
+    NONE: { x: 0, y: 0 },
+};
 
 export class Pacman {
     /**
@@ -21,8 +29,8 @@ export class Pacman {
         this.posicion = { x: startX, y: startY };
         this.prevPos  = { x: startX, y: startY };
 
-        this.direction     = { x: 1, y: 0 };
-        this.nextDirection = { x: 1, y: 0 };
+        this.direction     = DIRECTION.NONE;
+        this.nextDirection = DIRECTION.NONE;
 
         // ── Visual ────────────────────────────────────────────
         this.graphics = new Graphics();
@@ -82,8 +90,14 @@ export class Pacman {
     _redraw(progress) {
         const radius   = this.CELL_SIZE * 0.55;
         const maxMouth = Math.PI * 0.25;
-        const mouth    = Math.max(0.05, maxMouth * Math.abs(Math.sin(progress * Math.PI)));
-        const rotation = Math.atan2(this.direction.y, this.direction.x);
+        const isMoving = this.direction.x !== 0 || this.direction.y !== 0;
+        const mouth    = isMoving 
+            ? Math.max(0.05, maxMouth * Math.abs(Math.sin(progress * Math.PI)))
+            : maxMouth * 0.5; 
+        
+        const rotation = isMoving 
+            ? Math.atan2(this.direction.y, this.direction.x) 
+            : 0;
 
         this.graphics.clear();
         this.graphics.moveTo(0, 0);
@@ -97,8 +111,9 @@ export class Pacman {
     reset(x, y) {
         this.posicion  = { x, y };
         this.prevPos   = { x, y };
-        this.direction     = { x: 1, y: 0 };
-        this.nextDirection = { x: 1, y: 0 };
+        
+        this.direction     = DIRECTION.NONE;
+        this.nextDirection = DIRECTION.NONE;
 
         this.graphics.x = this._cellCenter(x);
         this.graphics.y = this._cellCenterY(y);
@@ -123,6 +138,6 @@ export class Pacman {
     }
 
     _cellCenterY(gridY) {
-        return gridY * this.CELL_SIZE + this.CELL_SIZE / 2 + UI_HEIGHT;
+        return gridY * this.CELL_SIZE + this.CELL_SIZE / 2;
     }
 }

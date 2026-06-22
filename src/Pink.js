@@ -2,9 +2,9 @@ import { Ghost } from './Ghost.js';
 import PF from 'pathfinding';
 
 export class Pink extends Ghost {
-    constructor(container, id, startX, startY, color, name, cellSize) {
-        super(container, id, startX, startY, color, name, cellSize);
-        this.esquina = { x: 27, y: 1 };
+    constructor(container, id, startX, startY, color, name, cellSize, esquina, maze) {
+        super(container, id, startX, startY, color, name, cellSize, maze);
+        this.esquina = esquina;
         this.wait(4000);
     }
 

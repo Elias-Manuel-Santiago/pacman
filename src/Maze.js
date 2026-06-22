@@ -3,16 +3,10 @@
 // ============================================================
 
 import { Graphics, Assets, Sprite, Texture, Rectangle, Container } from 'pixi.js';
-import { CELL, UI_HEIGHT, calcCellSize } from './Grid.js';
+import { CELL, calcCellSize } from './Grid.js';
 import { LEVEL_CONFIGS } from './LevelsConfig.js';
 import { tileMapping, tileMappingBorder, SPRITE_TILE_SIZE } from './tileMap.js';
 import PF from 'pathfinding';
-
-
-
-
-
-
 
 export class Maze {
     /**
@@ -175,7 +169,7 @@ export class Maze {
         for (let y = 0; y < this.ROWS; y++) {
             for (let x = 0; x < this.COLS; x++) {
                 const px = x * this.CELL_SIZE;
-                const py = y * this.CELL_SIZE + UI_HEIGHT;
+                const py = y * this.CELL_SIZE;
 
                 if (this.grid[y][x] === CELL.WALL) {
                     // Calcular máscara binaria de los 8 vecinos cardinales
@@ -301,16 +295,20 @@ export class Maze {
     _drawOrbs() {
         this.orbGraphics.clear();
 
+        // Calculamos los radios de forma dinámica para que se adapten al CELL_SIZE
+        const orbRadius = this.CELL_SIZE * 0.15;
+        const pelletRadius = this.CELL_SIZE * 0.4;
+
         for (let y = 0; y < this.ROWS; y++) {
             for (let x = 0; x < this.COLS; x++) {
                 const cx = x * this.CELL_SIZE + this.CELL_SIZE / 2;
-                const cy = y * this.CELL_SIZE + this.CELL_SIZE / 2 + UI_HEIGHT;
+                const cy = y * this.CELL_SIZE + this.CELL_SIZE / 2;
 
                 if (this.grid[y][x] === CELL.ORB) {
-                    this.orbGraphics.circle(cx, cy, 2);
+                    this.orbGraphics.circle(cx, cy, orbRadius);
                     this.orbGraphics.fill(0xffeeaa);
                 } else if (this.grid[y][x] === CELL.PELLET) {
-                    this.orbGraphics.circle(cx, cy, 5);
+                    this.orbGraphics.circle(cx, cy, pelletRadius);
                     this.orbGraphics.fill(0xffeeaa);
                 }
             }

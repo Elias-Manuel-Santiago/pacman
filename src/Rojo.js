@@ -3,9 +3,9 @@ import { Ghost } from './Ghost.js';
 import PF from 'pathfinding';
 
 export class Rojo extends Ghost {
-    constructor(container, id, startX, startY, color, name, cellSize) {
-        super(container, id, startX, startY, color, name, cellSize);
-        this.esquina = { x: 2, y: 1 };
+    constructor(container, id, startX, startY, color, name, cellSize, esquina, maze) {
+        super(container, id, startX, startY, color, name, cellSize, maze);
+        this.esquina = esquina;
     }
 
     pathfinding(posObjetivo, grid) {

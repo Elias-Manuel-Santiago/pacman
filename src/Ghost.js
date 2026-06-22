@@ -3,7 +3,7 @@
 // ============================================================
 
 import { Graphics } from 'pixi.js';
-import { UI_HEIGHT, GHOST_STATE, lerp, MOVE_INTERVAL_GHOST, MOVE_INTERVAL_GHOST_FRIGHTENED } from './Grid.js';
+import { GHOST_STATE, lerp, MOVE_INTERVAL_GHOST, MOVE_INTERVAL_GHOST_FRIGHTENED } from './Grid.js';
 import PF from 'pathfinding';
 
 const COLOR_FRIGHTENED = 0x2222ff;
@@ -19,7 +19,7 @@ export class Ghost {
      * @param {string} name
      * @param {number} cellSize - Tamaño de celda en píxeles
      */
-    constructor(container, id, startX, startY, color, name, cellSize) {
+    constructor(container, id, startX, startY, color, name, cellSize, maze) {
         this.id       = id;
         this.name     = name;
         this.color    = color;
@@ -30,7 +30,7 @@ export class Ghost {
         this.prevPos  = { x: startX, y: startY };
         this.direction = { x: 0, y: -1 };
 
-        this.state = (startY <= 12)
+        this.state = (!maze._isGhostHouse(startX, startY))
             ? GHOST_STATE.SCATTER
             : GHOST_STATE.HOUSE;
 
@@ -225,6 +225,6 @@ export class Ghost {
     }
 
     _cellCenterY(gridY) {
-        return gridY * this.CELL_SIZE + this.CELL_SIZE / 2 + UI_HEIGHT;
+        return gridY * this.CELL_SIZE + this.CELL_SIZE / 2;
     }
 }

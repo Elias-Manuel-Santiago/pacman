@@ -5,18 +5,19 @@
 // se calculan dinámicamente en Game.js a partir del mapa del nivel.
 // Las constantes aquí son independientes del nivel.
 
-/** Alto de la barra HUD en píxeles (encima del área de juego) */
-export const UI_HEIGHT = 50;
+
 
 /** Alto total del canvas */
-export const CANVAS_HEIGHT = window.innerHeight;
+export const CANVAS_HEIGHT = 180; // 180 del laberinto + 20 de la UI
 
 /**
  * Calcula el tamaño de celda en píxeles para un mapa dado.
  * @param {number} rows - Número de filas del mapa
  */
 export function calcCellSize(rows) {
-    return window.innerHeight / rows - 3;
+    // Dividimos por las filas para que las celdas encajen exactamente.
+    const playAreaHeight = CANVAS_HEIGHT;
+    return playAreaHeight / rows;
 }
 
 /**

@@ -47,3 +47,10 @@ export const GHOST_STARTS = [
     { x:14, y: 14 },
     { x:16, y: 14 },
 ];
+
+export const GHOST_CORNERS = [
+    { x:  2, y:  1 }, // Rojo    — esquina superior izquierda
+    { x: 27, y:  1 }, // Pink    — esquina superior derecha
+    { x: 27, y: 29 }, // Cyan    — esquina inferior derecha
+    { x:  2, y: 29 }, // Yellow  — esquina inferior izquierda
+];
