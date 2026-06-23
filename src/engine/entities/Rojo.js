@@ -1,4 +1,4 @@
-import { GHOST_STATE } from './Grid.js';
+import { GHOST_STATE } from '../mapBuilding/Grid.js';
 import { Ghost } from './Ghost.js';
 import PF from 'pathfinding';
 

@@ -3,7 +3,7 @@
 // ============================================================
 
 import { Container, Graphics } from 'pixi.js';
-import { CANVAS_HEIGHT } from './Grid.js';
+import { CANVAS_HEIGHT } from '../engine/mapBuilding/Grid.js';
 
 export class UI {
     constructor(stage, CANVAS_WIDTH, CELL_SIZE) {

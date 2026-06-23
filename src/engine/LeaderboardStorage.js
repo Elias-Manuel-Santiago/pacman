@@ -1,7 +1,7 @@
 // ============================================================
 // LeaderboardStorage.js — Gestión de Persistencia de Datos
 // ============================================================
-import { UI } from "./UI.js";
+import { UI } from "../UI/UI.js";
 
 
 const LOCAL_STORAGE_KEY = 'pacman_leaderboard';

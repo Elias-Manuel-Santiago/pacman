@@ -3,7 +3,7 @@
 // ============================================================
 
 import { Graphics } from 'pixi.js';
-import { GHOST_STATE, lerp, MOVE_INTERVAL_GHOST, MOVE_INTERVAL_GHOST_FRIGHTENED } from './Grid.js';
+import { GHOST_STATE, lerp, MOVE_INTERVAL_GHOST, MOVE_INTERVAL_GHOST_FRIGHTENED } from '../mapBuilding/Grid.js';
 import PF from 'pathfinding';
 
 const COLOR_FRIGHTENED = 0x2222ff;

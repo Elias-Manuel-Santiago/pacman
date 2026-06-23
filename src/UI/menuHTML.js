@@ -1,5 +1,5 @@
-import html from './index.html';
-import { updateVisualLeaderboard } from './LeaderboardStorage.js';
+import html from './styles/index.html';
+import { updateVisualLeaderboard } from '../engine/LeaderboardStorage.js';
 
 
 // MenuHTML.js

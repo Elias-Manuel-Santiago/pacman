@@ -3,15 +3,15 @@
 // ============================================================
 
 import { Graphics } from 'pixi.js';
-import { Maze } from './Maze.js';
-import { Pacman, DIRECTION } from './Pacman.js';
-import { Rojo } from './Rojo.js';
-import { Pink } from './Pink.js';
-import { Cyan } from './Cyan.js';
-import { Yellow } from './Yellow.js';
+import { Maze } from './mapBuilding/Maze.js';
+import { Pacman, DIRECTION } from './entities/Pacman.js';
+import { Rojo } from './entities/Rojo.js';
+import { Pink } from './entities/Pink.js';
+import { Cyan } from './entities/Cyan.js';
+import { Yellow } from './entities/Yellow.js';
 import { LEVEL_CONFIGS } from './LevelsConfig.js';
-import { UI } from './UI.js';
-import { DJ } from './DJ.js';
+import { UI } from '../UI/UI.js';
+import { DJ } from '../sfx/DJ.js';
 import {
     CANVAS_HEIGHT,
     UI_HEIGHT,
@@ -22,7 +22,7 @@ import {
     SCORE,
     calcCellSize,
     calcCanvasWidth,
-} from './Grid.js';
+} from './mapBuilding/Grid.js';
 
 import PF from 'pathfinding';
 

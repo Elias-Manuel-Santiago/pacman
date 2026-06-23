@@ -4,8 +4,8 @@
 
 import { Graphics, Assets, Sprite, Texture, Rectangle, Container } from 'pixi.js';
 import { CELL, calcCellSize } from './Grid.js';
-import { LEVEL_CONFIGS } from './LevelsConfig.js';
-import { tileMapping, tileMappingBorder, SPRITE_TILE_SIZE } from './tileMap.js';
+import { LEVEL_CONFIGS } from '../LevelsConfig.js';
+import { tileMapping, tileMappingBorder, SPRITE_TILE_SIZE } from './TileMap.js';
 import PF from 'pathfinding';
 
 export class Maze {

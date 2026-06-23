@@ -1,12 +1,12 @@
 // main.js
 import { Application } from 'pixi.js';
-import { Game } from './Game.js';
-import { injectRetroStyles } from './stylesManager.js';
-import { MenuHTML } from './MenuHTML.js';
-import { VersusGame } from './VersusGame.js';
-import { DJ, SOUND_GROUP } from './DJ.js';
+import { Game } from './engine/Game.js';
+import { injectRetroStyles } from './UI/stylesManager.js';
+import { MenuHTML } from './UI/menuHTML.js';
+import { VersusGame } from './engine/VersusGame.js';
+import { DJ, SOUND_GROUP } from './sfx/DJ.js';
 // IMPORTAMOS EL NUEVO ALMACENAMIENTO DE DATOS
-import { updateVisualLeaderboard, submitSingleplayerScore } from './LeaderboardStorage.js';
+import { updateVisualLeaderboard, submitSingleplayerScore } from './engine/LeaderboardStorage.js';
 
 const levelThemeUrl = new URL('./sfx/level-theme.mp3', import.meta.url).href;
 

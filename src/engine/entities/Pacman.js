@@ -3,7 +3,7 @@
 // ============================================================
 
 import { Graphics } from 'pixi.js';
-import { lerp } from './Grid.js';
+import { lerp } from '../mapBuilding/Grid.js';
 
 export const DIRECTION = {
     UP: { x: 0, y: -1 },

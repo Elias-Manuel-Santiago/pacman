@@ -1,4 +1,4 @@
-import style from './style.css';
+import style from './styles/style.css';
 
 // stylesManager.js
 export function injectRetroStyles() {

@@ -1,9 +1,9 @@
-import * as mapa1 from './mapas/mapalvl1.js';
-import * as mapa2 from './mapas/mapalvl2.js';
-import * as mapa3 from './mapas/mapalvl3.js';
-import * as mapa4 from './mapas/mapalvl4.js';
-import * as mapa5 from './mapas/mapalvl5.js';
-import { MOVE_INTERVAL_GHOST, MOVE_INTERVAL_GHOST_FAST } from './Grid.js';
+import * as mapa1 from '../mapas/mapalvl1.js';
+import * as mapa2 from '../mapas/mapalvl2.js';
+import * as mapa3 from '../mapas/mapalvl3.js';
+import * as mapa4 from '../mapas/mapalvl4.js';
+import * as mapa5 from '../mapas/mapalvl5.js';
+import { MOVE_INTERVAL_GHOST, MOVE_INTERVAL_GHOST_FAST } from './mapBuilding/Grid.js';
 
 
 export const LEVEL_CONFIGS = {
