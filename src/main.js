@@ -10,7 +10,6 @@ import { updateVisualLeaderboard, submitSingleplayerScore } from './LeaderboardS
 (async () => {
     injectRetroStyles();
     const rootElement = document.getElementById('app-root');
-    updateVisualLeaderboard();
 
     new MenuHTML(rootElement, async (gameSettings) => {
 

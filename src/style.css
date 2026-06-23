@@ -269,19 +269,19 @@ body {
 }
 
 .leaderboard-table td {
-    padding: 7px 0;
+    padding: 7px;
 }
 
 .rank-1 {
-    color: #ff2222;
+    color: #ebd300;
 }
 
 .rank-2 {
-    color: #ffb8ae;
+    color: #dbdbdb;
 }
 
 .rank-3 {
-    color: #00ffff;
+    color: #cf5d10;
 }
 
 /* ── PANTALLA MENÚ / FORMULARIOS ────────────────────────── */

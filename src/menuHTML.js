@@ -1,5 +1,5 @@
 import html from './index.html';
-import { renderLeaderboard } from './LeaderboardStorage';
+import { updateVisualLeaderboard } from './LeaderboardStorage.js';
 
 
 // MenuHTML.js
@@ -12,12 +12,15 @@ export class MenuHTML {
         this.root = rootContainer;
         this.onStartGame = onStartGame;
         this.render();
+        updateVisualLeaderboard();
+
         this.initEvents();
     }
 
     render() {
         this.root.innerHTML = html;
     }
+
 
     initEvents() {
         const startScreen = document.getElementById('start-screen');
