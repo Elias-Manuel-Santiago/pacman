@@ -4,8 +4,15 @@ import { Game } from './Game.js';
 import { injectRetroStyles } from './stylesManager.js';
 import { MenuHTML } from './MenuHTML.js';
 import { VersusGame } from './VersusGame.js';
+import { DJ, SOUND_GROUP } from './DJ.js';
 // IMPORTAMOS EL NUEVO ALMACENAMIENTO DE DATOS
 import { updateVisualLeaderboard, submitSingleplayerScore } from './LeaderboardStorage.js';
+
+const levelThemeUrl = new URL('./sfx/level-theme.mp3', import.meta.url).href;
+
+DJ.registerMany({
+    'level-theme': { src: levelThemeUrl, group: SOUND_GROUP.MUSIC, loop: true, volume: 0.7 },
+});
 
 (async () => {
     injectRetroStyles();

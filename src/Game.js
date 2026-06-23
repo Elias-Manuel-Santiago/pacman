@@ -11,6 +11,7 @@ import { Cyan } from './Cyan.js';
 import { Yellow } from './Yellow.js';
 import { LEVEL_CONFIGS } from './LevelsConfig.js';
 import { UI } from './UI.js';
+import { DJ } from './DJ.js';
 import {
     CANVAS_HEIGHT,
     UI_HEIGHT,
@@ -37,6 +38,7 @@ export class Game {
     constructor(app, settings) {
         this.app = app;
         this.gameSettings = settings;
+        this.dj = settings.dj || DJ;
 
         this.timeSinceLastMove = 0;
         this.inputDirection = { x: 0, y: 0 };
@@ -66,6 +68,7 @@ export class Game {
         this.score = 0;
         this.lives = 1; // O las vidas iniciales de tu preferencia
         this._buildLevel();
+        this.dj.playSfx('level-theme');
     }
 
     _nextLevel() {
@@ -79,6 +82,8 @@ export class Game {
         const isVersus = !!this.gameSettings.isVersus;
         const isFinalTournament = isVersus && this.level >= 5 && this.gameSettings.currentPlayer === 2;
 
+        this.dj.stopMusic(300);
+        this.dj.playSfx(isMaxLevel ? 'win' : 'level-clear', { silent: true }).catch(() => {});
 
         const winScorePara = document.getElementById('win-score');
         if (winScorePara) {
@@ -113,6 +118,7 @@ export class Game {
 
     _buildLevel() {
         this._clearScene();
+        this.dj.playMusic('level-theme', { silent: true }).catch(() => {});
 
         this.state = STATE.PLAYING;
         this.timeSinceLastMove = 0;
@@ -372,8 +378,10 @@ export class Game {
     _onCollect(cellType) {
         if (cellType === CELL.ORB) {
             this.score += SCORE.ORB;
+            this.dj.playSfx('orb', { silent: true }).catch(() => {});
         } else if (cellType === CELL.PELLET) {
             this.score += SCORE.PELLET;
+            this.dj.playSfx('pellet', { silent: true }).catch(() => {});
             this.ghostsEatenThisPellet = 0;
             for (const ghost of this.ghosts) {
                 ghost.frighten(FRIGHTEN_DURATION);
@@ -388,6 +396,7 @@ export class Game {
             const scoreKey = `GHOST_${Math.min(this.ghostsEatenThisPellet, 4)}`;
             this.score += SCORE[scoreKey];
             this.ui.updateScore(this.score);
+            this.dj.playSfx('ghost-eaten', { silent: true }).catch(() => {});
             ghost.respawn();
         } else if (ghost.state !== GHOST_STATE.EATEN) {
             this._pacmanDied();
@@ -398,9 +407,12 @@ export class Game {
     _pacmanDied() {
         this.lives--;
         this.ui.updateLives(this.lives);
+        this.dj.playSfx('death', { silent: true }).catch(() => {});
 
         if (this.lives <= 0) {
             this.state = STATE.GAME_OVER;
+            this.dj.stopMusic(300);
+            this.dj.playSfx('game-over', { silent: true }).catch(() => {});
 
             const isVersus = !!this.gameSettings.isVersus;
             const isFinalTournament = isVersus && this.gameSettings.currentLevel >= 5 && this.gameSettings.currentPlayer === 2;
@@ -453,6 +465,7 @@ export class Game {
 
     destroy() {
         this.state = 'destroyed';
+        this.dj.stopAll(120);
         this.app.ticker.remove(this._onTick);
         this._clearScene();
     }
