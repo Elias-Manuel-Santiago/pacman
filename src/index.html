@@ -53,12 +53,11 @@
         </div>
     </div>
 
-    <!-- CENTRO: Pantalla de juego (oculta hasta que empieza) -->
     <main class="game-layout hidden" id="main-game-layout" style="position: relative;">
 
         <div id="versus-turn-overlay" class="versus-overlay-container hidden">
-            <h2 id="vs-player-title" class="versus-overlay-title">TURNO DE JUGADOR 1</h2>
-            <p class="versus-overlay-subtitle">PREPÁRATE PARA ARRANCAR</p>
+            <h2 id="vs-player-title" class="versus-overlay-title">PREPÁRATE PARA ARRANCAR</h2>
+            <p id="vs-player-subtitle" class="versus-overlay-subtitle">PRESIONA EL BOTÓN PARA EMPEZAR</p>
 
             <div class="retro-panel" style="margin-bottom: 20px; background: #000; padding: 15px;">
                 <ul class="controls-list" style="text-align: left;">
@@ -68,8 +67,41 @@
                     <li><span class="key">D</span><span class="key">→</span> DERECHA</li>
                 </ul>
             </div>
+            <button id="btn-versus-ready" class="btn-arcade" style="max-width: 250px;">JUGAR</button>
+        </div>
 
-            <button id="btn-versus-ready" class="btn-arcade" style="max-width: 200px;">JUGAR</button>
+        <div id="game-over-overlay" class="versus-overlay-container hidden">
+            <h2 class="versus-overlay-title" style="color: #ff2222;">GAME OVER</h2>
+            <p id="game-over-score" class="versus-overlay-subtitle">Puntaje final: 0</p>
+
+            <div id="game-over-actions" class="overlay-buttons-stacked"
+                style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            </div>
+        </div>
+
+        <div id="win-overlay" class="versus-overlay-container hidden">
+            <h2 class="versus-overlay-title" style="color: #ffff00;">¡VICTORIA!</h2>
+            <p id="win-score" class="versus-overlay-subtitle">Puntaje: 0</p>
+
+            <div id="win-actions" class="overlay-buttons-stacked"
+                style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            </div>
+        </div>
+
+        <div id="tournament-end-overlay" class="versus-overlay-container hidden">
+            <h2 class="versus-overlay-title" style="color: #ffff00; font-size: 20px;">FIN DEL TORNEO</h2>
+
+            <div class="retro-panel"
+                style="background: #000; padding: 20px; width: 100%; max-width: 400px; text-align: center; margin-bottom: 20px;">
+                <p id="tournament-winner" style="color: #00ff00; font-size: 12px; margin-bottom: 15px;"></p>
+                <p id="tournament-loser" style="color: #ff2222; font-size: 10px; margin-bottom: 5px;"></p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 250px;">
+                <button id="btn-tournament-restart" class="btn-arcade">REINICIAR</button>
+                <button id="btn-tournament-menu" class="btn-arcade"
+                    style="background: #555; border-color: #222;">MENÚ</button>
+            </div>
         </div>
 
         <div class="game-hud">
@@ -102,26 +134,6 @@
                 </tr>
             </thead>
             <tbody>
-                <tr class="rank-1">
-                    <td>1ST</td>
-                    <td>PAC</td>
-                    <td>99990</td>
-                </tr>
-                <tr class="rank-2">
-                    <td>2ND</td>
-                    <td>WAK</td>
-                    <td>75000</td>
-                </tr>
-                <tr class="rank-3">
-                    <td>3RD</td>
-                    <td>GHO</td>
-                    <td>52300</td>
-                </tr>
-                <tr>
-                    <td>4TH</td>
-                    <td>AAA</td>
-                    <td>21000</td>
-                </tr>
             </tbody>
         </table>
     </div>

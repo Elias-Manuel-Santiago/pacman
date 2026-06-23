@@ -1,4 +1,6 @@
 import html from './index.html';
+import { renderLeaderboard } from './LeaderboardStorage';
+
 
 // MenuHTML.js
 export class MenuHTML {
@@ -21,7 +23,7 @@ export class MenuHTML {
         const startScreen = document.getElementById('start-screen');
         const gameLayout = document.getElementById('main-game-layout');
         const themeToggle = document.getElementById('theme-toggle');
-        
+
         // Formularios independientes
         const formSingle = document.getElementById('form-singleplayer');
         const formVersus = document.getElementById('form-versus');
@@ -49,11 +51,11 @@ export class MenuHTML {
         formSingle.addEventListener('submit', (e) => {
             e.preventDefault();
             const p1Data = document.getElementById('player1-single').value;
-            
-            startGameTransition({ 
-                mode: 'single', 
-                player1: p1Data, 
-                player2: '' 
+
+            startGameTransition({
+                mode: 'single',
+                player1: p1Data,
+                player2: ''
             });
         });
 
@@ -63,12 +65,13 @@ export class MenuHTML {
             const p1Data = document.getElementById('player1-versus').value;
             const p2Data = document.getElementById('player2-versus').value;
 
-            startGameTransition({ 
-                mode: 'versus', 
-                player1: p1Data, 
-                player2: p2Data 
+            startGameTransition({
+                mode: 'versus',
+                player1: p1Data,
+                player2: p2Data
             });
         });
+
     }
 }
 

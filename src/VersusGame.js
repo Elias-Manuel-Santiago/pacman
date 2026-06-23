@@ -43,38 +43,36 @@ export class VersusGame {
     }
 
     showTurnOverlay() {
+        // Reutilizamos el overlay existente mutando los textos dinámicamente
         const activeName = this.currentPlayer === 1 ? this.player1 : this.player2;
         this.playerTitle.innerText = `TURNO DE: ${activeName.toUpperCase()}`;
+
+        const subtitle = document.getElementById('vs-player-subtitle');
+        if (subtitle) subtitle.innerText = `PREPÁRATE PARA EL NIVEL ${this.currentLevel}`;
+
         this.overlay.classList.remove('hidden');
     }
 
     startActiveTurn() {
-        // Instanciamos el Game.js original de forma limpia
+        this.cleanCurrentGame();
+
         this.currentGameInstance = new Game(this.app, {
-            mode: 'single',
-            player1: this.currentPlayer === 1 ? this.player1 : this.player2
+            player1: this.currentPlayer === 1 ? this.player1 : this.player2,
+            isVersus: true,
+            currentPlayer: this.currentPlayer,
+            currentLevel: this.currentLevel,
+            onQuitCallback: this.onQuit, // Por si se requiere salir
+            
+            onGameOver: (finalScore) => {
+                this.handleRoundEnd(finalScore);
+            },
+            
+            onLevelComplete: (scoreObtained, isMaxLevel) => {
+                this.handleRoundEnd(scoreObtained);
+            }
         });
 
-        // Forzamos el nivel inicial al nivel del Torneo actual
         this.currentGameInstance.level = this.currentLevel;
-        this.currentGameInstance._buildLevel();
-
-        // Interceptamos la finalización de nivel o Game Over (Hooks de captura)
-        
-        // Caso A: Muere por completo (Game Over)
-        this.currentGameInstance.ui.showGameOver = (finalScore) => {
-            this.handleRoundEnd(this.currentGameInstance.score);
-        };
-
-        // Caso B: Pasa de nivel ganando
-        this.currentGameInstance._nextLevel = () => {
-            this.handleRoundEnd(this.currentGameInstance.score);
-        };
-
-        // Caso C: Completó el juego completo (Nivel 5 Win)
-        this.currentGameInstance.ui.showWin = (finalScore) => {
-            this.handleRoundEnd(this.currentGameInstance.score);
-        };
     }
 
     handleRoundEnd(scoreObtained) {
@@ -90,7 +88,7 @@ export class VersusGame {
         } else {
             this.scores.p2[this.currentLevel] = scoreObtained;
             this.cleanCurrentGame();
-
+            console.log(this.currentLevel);
             // Si el Jugador 2 termina el Nivel 5, el torneo finaliza por completo
             if (this.currentLevel >= 5) {
                 this.endTournament();

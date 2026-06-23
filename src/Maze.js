@@ -196,7 +196,6 @@ export class Maze {
 
 
                         if (this._isOutOfBounds(x, y)) mask = 256; // Vacio
-                        console.log(x + ', ' + y + ' mask: ' + mask);
 
                         // Obtener coordenadas en el spritesheet. Por defecto usa la caja sólida.
                         const coords = tileMappingBorder[mask] || { cx: 4, cy: 2 };
@@ -350,13 +349,9 @@ export class Maze {
     }
 
     destroy() {
-        if (this.wallContainer) {
-            this.wallContainer.destroy({ children: true });
-            this.wallContainer = null;
-        }
-        if (this.orbGraphics) {
-            this.orbGraphics.destroy();
-            this.orbGraphics = null;
-        }
+        this.wallContainer.destroy({ children: true });
+        this.wallContainer = null;
+        this.orbGraphics.destroy();
+        this.orbGraphics = null;
     }
 }

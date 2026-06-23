@@ -88,7 +88,7 @@ body {
     }
 
     .app-container {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 0.6fr 1fr 0.6fr;
         grid-template-rows: 1fr;
         grid-template-areas: "controls menu leaderboard";
         align-items: center;
@@ -553,4 +553,18 @@ body {
 .btn-end-tournament:active {
     transform: translateY(2px);
     border-bottom-width: 2px;
+}
+
+/* Animación Retro para Nuevos Récords */
+.blink-record {
+    animation: retroBlink 0.6s steps(2, start) infinite;
+    font-family: var(--font-retro);
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0px #000;
+}
+
+@keyframes retroBlink {
+    to {
+        visibility: hidden;
+    }
 }

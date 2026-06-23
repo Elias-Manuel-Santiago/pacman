@@ -42,6 +42,11 @@ export class Game {
         this.inputDirection = { x: 0, y: 0 };
         this.ghostsEatenThisPellet = 0;
 
+        this.onGameOverCallback = settings.onGameOver || null;
+        this.onLevelCompleteCallback = settings.onLevelComplete || null;
+
+        console.log(settings);
+
         this._setupInput();
         this._start();
 
@@ -51,25 +56,60 @@ export class Game {
 
     // ── Ciclo de vida ─────────────────────────────────────────
 
-// En tu Game.js busca el método _start y cámbialo para que no sobreescriba tu nivel:
-_start() {
-    // Si ya viene predefinido por el VersusGame no lo reseteamos a 5
-    if (!this.level) {
-        this.level = 1; 
+    // En tu Game.js busca el método _start y cámbialo para que no sobreescriba tu nivel:
+    _start() {
+        // Si ya viene predefinido por el VersusGame no lo reseteamos a 5
+        if (this.gameSettings.currentLevel) {
+            this.level = this.gameSettings.currentLevel;
+        }else{
+            this.level = 1;
+        }
+        this.score = 0;
+        this.lives = 1; // O las vidas iniciales de tu preferencia
+        this._buildLevel();
     }
-    this.score = 0;
-    this.lives = 1; // O las vidas iniciales de tu preferencia
-    this._buildLevel();
-}
 
     _nextLevel() {
-        if (this.level >= MAX_LEVEL) {
-            this.state = STATE.WIN;
-            this.ui.showWin(this.score);
-            return;
+        // Guardamos score antes de mutarlo
+        const oldScore = this.score;
+        const isMaxLevel = this.level >= MAX_LEVEL;
+
+        this.state = STATE.WIN;
+
+        // Evaluamos si venimos desde VersusGame analizando la configuración instanciada
+        const isVersus = !!this.gameSettings.isVersus;
+        const isFinalTournament = isVersus && this.level >= 5 && this.gameSettings.currentPlayer === 2;
+
+
+        const winScorePara = document.getElementById('win-score');
+        if (winScorePara) {
+            winScorePara.innerHTML = `SCORE: ${score}`;
+            // Si ganó en el 5to nivel (isMaxLevel) y es un récord nuevo, lo indicamos de manera llamativa
+            if (!isVersus && isMaxLevel && isNewRecord) {
+                winScorePara.innerHTML += `<br><span class="blink-record" style="color:#00ff00; font-size:12px; display:block; margin-top:10px;">¡NUEVO RÉCORD HISTÓRICO!</span>`;
+            }
         }
-        this.level++;
-        this._buildLevel();
+
+        this.ui.showWin(this.score, isVersus, isFinalTournament, isMaxLevel, {
+            onNextLevel: () => {
+                this.ui.hideWin();
+                this.level++;
+                this._buildLevel();
+            },
+            onRestartFromScratch: () => {
+                this.ui.hideWin();
+                this.level = 1;
+                this.score = 0;
+                this._buildLevel();
+            },
+            onQuit: () => {
+                if (this.gameSettings.onQuitCallback) this.gameSettings.onQuitCallback();
+            },
+            onNextPlayer: () => {
+                this.ui.hideWin();
+                if (this.onLevelCompleteCallback) this.onLevelCompleteCallback(oldScore, isMaxLevel);
+            }
+        });
     }
 
     _buildLevel() {
@@ -272,7 +312,6 @@ _start() {
 
         switch (ghost.id) {
             case 0:
-                console.log(ghost.state);
                 if (ghost.state === GHOST_STATE.HOUSE) break;
                 if (ghost.state === GHOST_STATE.SCATTER) {
                     ghost.pathfinding(ghost.esquina, this.maze.gridPathfinding.clone());
@@ -356,18 +395,38 @@ _start() {
         }
     }
 
+    // Busca e intercepta el método _pacmanDied() por este:
     _pacmanDied() {
         this.lives--;
         this.ui.updateLives(this.lives);
 
         if (this.lives <= 0) {
             this.state = STATE.GAME_OVER;
-            this.ui.showGameOver(this.score);
+
+            const isVersus = !!this.gameSettings.isVersus;
+            const isFinalTournament = isVersus && this.gameSettings.currentLevel >= 5 && this.gameSettings.currentPlayer === 2;
+
+            
+            this.ui.showGameOver(this.score, isVersus, isFinalTournament, {
+                onRestart: () => {
+                    this.ui.hideGameOver();
+                    this._start();
+                },
+                onQuit: () => {
+                    this.ui.hideGameOver();
+                    if (this.gameSettings.onQuitCallback) this.gameSettings.onQuitCallback();
+                },
+                onNextPlayer: () => {
+                    this.ui.hideGameOver();
+                    if (this.onGameOverCallback != null) {
+                        this.onGameOverCallback(this.score);
+                    }
+                }
+            });
             return;
         }
 
         this.pacman.reset(this.PACMAN_START.x, this.PACMAN_START.y);
-
         for (let i = 0; i < this.ghosts.length; i++) {
             const start = this.GHOST_STARTS[i];
             this.ghosts[i].reset(start.x, start.y);
