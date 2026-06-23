@@ -319,7 +319,10 @@ export class Maze {
     isWalkable(x, y) {
         if (x < 0 || x >= this.COLS || y < 0 || y >= this.ROWS) return false;
         const c = this.grid[y][x];
-        return c !== CELL.WALL && c !== CELL.GHOST_DOOR && c !== CELL.GHOST_HOUSE;
+        return c !== CELL.WALL
+            && c !== CELL.GHOST_DOOR
+            && c !== CELL.GHOST_HOUSE
+            && c !== CELL.OUT_OF_BONDS;
     }
 
     isGhostWalkable(x, y) {

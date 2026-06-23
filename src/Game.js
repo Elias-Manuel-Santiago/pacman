@@ -45,7 +45,6 @@ export class Game {
         this.onGameOverCallback = settings.onGameOver || null;
         this.onLevelCompleteCallback = settings.onLevelComplete || null;
 
-        console.log(settings);
 
         this._setupInput();
         this._start();
@@ -83,7 +82,7 @@ export class Game {
 
         const winScorePara = document.getElementById('win-score');
         if (winScorePara) {
-            winScorePara.innerHTML = `SCORE: ${score}`;
+            winScorePara.innerHTML = `SCORE: ${this.score}`;
             // Si ganó en el 5to nivel (isMaxLevel) y es un récord nuevo, lo indicamos de manera llamativa
             if (!isVersus && isMaxLevel && isNewRecord) {
                 winScorePara.innerHTML += `<br><span class="blink-record" style="color:#00ff00; font-size:12px; display:block; margin-top:10px;">¡NUEVO RÉCORD HISTÓRICO!</span>`;

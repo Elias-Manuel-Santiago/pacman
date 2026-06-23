@@ -88,7 +88,6 @@ export class VersusGame {
         } else {
             this.scores.p2[this.currentLevel] = scoreObtained;
             this.cleanCurrentGame();
-            console.log(this.currentLevel);
             // Si el Jugador 2 termina el Nivel 5, el torneo finaliza por completo
             if (this.currentLevel >= 5) {
                 this.endTournament();

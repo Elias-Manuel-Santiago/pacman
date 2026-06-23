@@ -14,10 +14,10 @@ export class Pink extends Ghost {
 
         if (this.state === 'chase') {
             const dist = Math.abs(this.posicion.x - pacman.posicion.x)
-                       + Math.abs(this.posicion.y - pacman.posicion.y);
+                + Math.abs(this.posicion.y - pacman.posicion.y);
 
             if (dist <= 8) {
-                path = pathfinder.findPath(this.posicion.x, this.posicion.y, pacman.posicion.x, pacman.posicion.y, grid);
+                path = pathfinder.findPath(this.posicion.x, this.posicion.y, pacman.posicion.x, pacman.posicion.y, grid.clone());
                 path.shift();
             } else {
                 let target = null;
@@ -32,15 +32,19 @@ export class Pink extends Ghost {
                     }
                 }
                 if (target) {
-                    path = pathfinder.findPath(this.posicion.x, this.posicion.y, target.x, target.y, grid);
+                    path = pathfinder.findPath(this.posicion.x, this.posicion.y, target.x, target.y, grid.clone());
                     path.shift();
                 }
             }
         }
 
         if (path.length === 0) {
-            path = pathfinder.findPath(this.posicion.x, this.posicion.y, posObjetivo.x, posObjetivo.y, grid);
+            path = pathfinder.findPath(this.posicion.x, this.posicion.y, posObjetivo.x, posObjetivo.y, grid.clone());
             path.shift();
+            console.log(posObjetivo.x);
+            console.log(posObjetivo.y);
+            console.log(path);
+
         }
         this.movimientos = path;
     }

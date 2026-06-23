@@ -25,11 +25,9 @@ function saveLeaderboard(leaderboard) {
 
 export function updateVisualLeaderboard() {
 
-    console.log("a");
     const tbody = document.querySelector('#top_ranking .leaderboard-table tbody');
     if (!tbody) return;
 
-    console.log(getLeaderboard());
     const leaderboardData = getLeaderboard();
     // Tomamos únicamente los 10 primeros registros para el Top 10 visual
     const topTen = leaderboardData.slice(0, 10);
