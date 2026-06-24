@@ -110,6 +110,10 @@ DJ.registerMany({
                     }
                 });
 
+                window.addEventListener('resize', () => {
+                    game._resize();
+                });
+
                 // Renderizado inicial de la tabla utilizando la UI del juego recién creado
                 updateVisualLeaderboard();
 
