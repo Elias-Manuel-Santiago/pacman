@@ -12,17 +12,7 @@ import { Yellow } from './entities/Yellow.js';
 import { LEVEL_CONFIGS } from './LevelsConfig.js';
 import { UI } from '../UI/UI.js';
 import { DJ } from '../sfx/DJ.js';
-import {
-    CANVAS_HEIGHT,
-    UI_HEIGHT,
-    MOVE_INTERVAL,
-    FRIGHTEN_DURATION,
-    GHOST_STATE,
-    CELL,
-    SCORE,
-    calcCellSize,
-    calcCanvasWidth,
-} from './mapBuilding/Grid.js';
+import { CANVAS_HEIGHT,UI_HEIGHT, MOVE_INTERVAL, FRIGHTEN_DURATION, GHOST_STATE, CELL, SCORE, calcCellSize, calcCanvasWidth, } from './mapBuilding/Grid.js';
 
 import PF from 'pathfinding';
 
@@ -30,6 +20,7 @@ const STATE = {
     PLAYING: 'playing',
     GAME_OVER: 'game_over',
     WIN: 'win',
+    PAUSE: 'pause',
 };
 
 const MAX_LEVEL = 5;
@@ -198,6 +189,14 @@ export class Game {
                 e.preventDefault();
             }
 
+            // ── Manejar Pausa con P o Escape ──
+            if (e.code === 'KeyP' || e.code === 'Escape') {
+                e.preventDefault();
+                this._togglePause();
+                return;
+            }
+
+            // Si no está jugando, solo permite reiniciar con Space
             if (this.state !== STATE.PLAYING) {
                 if (e.code === 'Space') this._start();
                 return;
@@ -210,6 +209,7 @@ export class Game {
                 case 'ArrowDown': case 'KeyS': this.inputDirection = DIRECTION.DOWN; break;
             }
         });
+
         // --- Input Táctil (Swipe y Tap) ---
         let touchStartX = 0;
         let touchStartY = 0;
@@ -220,17 +220,27 @@ export class Game {
         }, { passive: true });
 
         window.addEventListener('touchend', (e) => {
+            if (e.target.closest('#pause-overlay:not(.hidden)')) { // Si el toque fue en el overlay de pausa, despausar
+                this._togglePause();
+                return;
+            }
+
+            // Si el toque fue en otros overlays HTML visibles (Game Over, Win, etc.), ignorar para que los botones del overlay funcionen correctamente
+            if (e.target.closest('.versus-overlay-container:not(.hidden)')) {
+                return;
+            }
+
             const dx = e.changedTouches[0].clientX - touchStartX;
             const dy = e.changedTouches[0].clientY - touchStartY;
 
-            // Si el movimiento es muy pequeño, se considera un "Tap" (toque)
-            if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-                if (this.state !== STATE.PLAYING) {
-                    this._start();
+            if (Math.abs(dx) < 10 && Math.abs(dy) < 10) { // Si el movimiento es muy pequeño, se considera un toque
+                if (this.state === STATE.PLAYING || this.state === STATE.PAUSE) { // Tap pausa/despausa el juego
+                    this._togglePause();
                 }
                 return;
             }
 
+            // Swipe: solo procesar si estamos jugando
             if (this.state !== STATE.PLAYING) return;
 
             if (Math.abs(dx) > Math.abs(dy)) {
@@ -239,6 +249,35 @@ export class Game {
                 this.inputDirection = dy > 0 ? DIRECTION.DOWN : DIRECTION.UP;
             }
         }, { passive: true });
+    }
+
+    // ── Toggle Pausa ──────────────────────────────────────────
+    _togglePause() {
+        if (this.state === STATE.PLAYING) {
+            // Pausar
+            this.state = STATE.PAUSE;
+            if (this.ui) this.ui.showPause();
+            
+            // Pausar la música si el DJ lo soporta
+            if (this.dj && typeof this.dj.pauseMusic === 'function') {
+                this.dj.pauseMusic();
+            }
+        } else if (this.state === STATE.PAUSE) {
+            // Reanudar
+            this.state = STATE.PLAYING;
+            if (this.ui) this.ui.hidePause();
+            
+            // Reanudar la música si el DJ lo soporta
+            if (this.dj && typeof this.dj.resumeMusic === 'function') {
+                this.dj.resumeMusic();
+            }
+
+            // Resetear timers para evitar "saltos" al reanudar
+            this.timeSinceLastMove = 0;
+            for (const ghost of this.ghosts) {
+                ghost.timeSinceLastMove = 0;
+            }
+        }
     }
 
     // ── Loop principal ────────────────────────────────────────
