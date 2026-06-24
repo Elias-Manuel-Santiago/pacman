@@ -10,6 +10,7 @@
                 <li><span class="key">A</span><span class="key">←</span> IZQUIERDA</li>
                 <li><span class="key">D</span><span class="key">→</span> DERECHA</li>
                 <li><span class="key">SPACE</span> REINICIAR</li>
+                <li><span class="key">ESC / P</span> PAUSAR</li>
             </ul>
         </div>
     </aside>
@@ -86,6 +87,12 @@
             <div id="win-actions" class="overlay-buttons-stacked"
                 style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
             </div>
+        </div>
+
+        <!-- PAUSA -->
+        <div id="pause-overlay" class="versus-overlay-container hidden">
+            <h2 class="versus-overlay-title" style="color: #ffff00;">PAUSADO</h2>
+            <p class="versus-overlay-subtitle">Toca P o Esc para volver al juego</p>
         </div>
 
         <div id="tournament-end-overlay" class="versus-overlay-container hidden">

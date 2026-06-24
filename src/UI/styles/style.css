@@ -568,3 +568,8 @@ body {
         visibility: hidden;
     }
 }
+
+/* ── OVERLAY DE PAUSA ───────────────────────────────────── */
+#pause-overlay .versus-overlay-title {
+    animation: retroBlink 1s steps(2, start) infinite;
+}
