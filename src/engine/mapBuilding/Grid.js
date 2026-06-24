@@ -59,6 +59,7 @@ export const CELL = {
     GHOST_DOOR:   4,  // '-'  puerta de la casa de fantasmas (solo fantasmas pasan)
     GHOST_HOUSE:  5,  // 'H'  interior de la casa de fantasmas (solo fantasmas)
     OUT_OF_BONDS: 6,  // 'X'  límites personalizados para el spritesheet
+    PORTAL      : 7,  // 'x'  limite para el portal (spritesheet)
 };
 
 // ── Estados de la IA de los fantasmas ────────────────────────

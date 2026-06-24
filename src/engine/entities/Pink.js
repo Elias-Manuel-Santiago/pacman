@@ -41,9 +41,6 @@ export class Pink extends Ghost {
         if (path.length === 0) {
             path = pathfinder.findPath(this.posicion.x, this.posicion.y, posObjetivo.x, posObjetivo.y, grid.clone());
             path.shift();
-            console.log(posObjetivo.x);
-            console.log(posObjetivo.y);
-            console.log(path);
 
         }
         this.movimientos = path;

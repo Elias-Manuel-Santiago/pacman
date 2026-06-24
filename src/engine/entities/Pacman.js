@@ -27,9 +27,9 @@ export class Pacman {
 
         // ── Estado lógico ─────────────────────────────────────
         this.posicion = { x: startX, y: startY };
-        this.prevPos  = { x: startX, y: startY };
+        this.prevPos = { x: startX, y: startY };
 
-        this.direction     = DIRECTION.NONE;
+        this.direction = DIRECTION.NONE;
         this.nextDirection = DIRECTION.NONE;
 
         // ── Visual ────────────────────────────────────────────
@@ -62,8 +62,8 @@ export class Pacman {
         let newY = this.posicion.y + this.direction.y;
 
         // Túnel horizontal
-        if (newX < 0)           newX = this.COLS - 1;
-        if (newX >= this.COLS)  newX = 0;
+        if (newX < 0) newX = this.COLS - 1;
+        if (newX >= this.COLS) newX = 0;
 
         if (maze.isWalkable(newX, newY)) {
             this.posicion.x = newX;
@@ -88,15 +88,15 @@ export class Pacman {
     }
 
     _redraw(progress) {
-        const radius   = this.CELL_SIZE * 0.55;
+        const radius = this.CELL_SIZE * 0.55;
         const maxMouth = Math.PI * 0.25;
         const isMoving = this.direction.x !== 0 || this.direction.y !== 0;
-        const mouth    = isMoving 
+        const mouth = isMoving
             ? Math.max(0.05, maxMouth * Math.abs(Math.sin(progress * Math.PI)))
-            : maxMouth * 0.5; 
-        
-        const rotation = isMoving 
-            ? Math.atan2(this.direction.y, this.direction.x) 
+            : maxMouth * 0.5;
+
+        const rotation = isMoving
+            ? Math.atan2(this.direction.y, this.direction.x)
             : 0;
 
         this.graphics.clear();
@@ -109,10 +109,10 @@ export class Pacman {
     // ── Ciclo de vida ─────────────────────────────────────────
 
     reset(x, y) {
-        this.posicion  = { x, y };
-        this.prevPos   = { x, y };
-        
-        this.direction     = DIRECTION.NONE;
+        this.posicion = { x, y };
+        this.prevPos = { x, y };
+
+        this.direction = DIRECTION.NONE;
         this.nextDirection = DIRECTION.NONE;
 
         this.graphics.x = this._cellCenter(x);

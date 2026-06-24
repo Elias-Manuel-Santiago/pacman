@@ -27,12 +27,12 @@ export class UI {
         this.coverContainer.zIndex = 10;
 
         this.leftCover = new Graphics();
-        this.leftCover.rect(0, CANVAS_HEIGHT - 3, CELL_SIZE, CANVAS_HEIGHT);
+        this.leftCover.rect(-1, 0, CELL_SIZE * 1.1, CANVAS_HEIGHT);
         this.leftCover.fill(0x000000);
         this.coverContainer.addChild(this.leftCover);
 
         this.rightCover = new Graphics();
-        this.rightCover.rect(CANVAS_WIDTH - CELL_SIZE, 0, CELL_SIZE, CANVAS_HEIGHT + 2);
+        this.rightCover.rect(CANVAS_WIDTH - CELL_SIZE, 0, CELL_SIZE * 1.1, CANVAS_HEIGHT + 2);
         this.rightCover.fill(0x000000);
         this.coverContainer.addChild(this.rightCover);
     }

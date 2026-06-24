@@ -56,6 +56,7 @@ export class Maze {
                     case '-': cell = CELL.GHOST_DOOR; break;
                     case 'H': cell = CELL.GHOST_HOUSE; break;
                     case 'X': cell = CELL.OUT_OF_BONDS; break;
+                    case 'x': cell = CELL.PORTAL; break;
                     default: cell = CELL.EMPTY; break;
                 }
                 this.grid[y][x] = cell;
@@ -142,14 +143,14 @@ export class Maze {
 
     _isOutOfBounds(x, y) {
         if (x <= 0 || x >= this.COLS - 1 || y < 0 || y >= this.ROWS) return true;
-        if (this.grid[y][x] === CELL.OUT_OF_BONDS) return true;
+        if (this.grid[y][x] === CELL.OUT_OF_BONDS || this.grid[y][x] === CELL.PORTAL) return true;
         return false;
     }
     /** Retorna si una coordenada dentro o fuera del mapa actúa como muro para el autotiling */
     _isWallAt(x, y) {
         // Los bordes exteriores extremos cuentan como muro para cerrar los sprites del perímetro
         if (x < 0 || x >= this.COLS || y < 0 || y >= this.ROWS) return true;
-        return this.grid[y][x] === CELL.WALL;
+        return this.grid[y][x] === CELL.WALL || this.grid[y][x] === CELL.PORTAL;
     }
 
     _isGhostHouse(x, y) {
