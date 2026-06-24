@@ -487,19 +487,28 @@ export class Game {
         this.timeSinceLastMove = 0;
     }
 
-    /**
+        /**
      * Centra y escala el stage para ajustarse al contenedor.
      * Sin barra interna: el canvas ocupa todo CANVAS_HEIGHT.
      */
     _resize() {
-        if (!this.CANVAS_WIDTH) return;
-        const scaleX = this.app.screen.width / this.CANVAS_WIDTH;
-        const scaleY = this.app.screen.height / CANVAS_HEIGHT;
+        if (this.state === 'destroyed' || !this.CANVAS_WIDTH) return;
+
+        const container = document.getElementById('pixi-game');
+        if (!container) return;
+
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+
+        if (w === 0 || h === 0) return; // Si el contenedor no es visible aún (ej: tamaño 0), no hacer nada
+
+        const scaleX = w / this.CANVAS_WIDTH;
+        const scaleY = h / CANVAS_HEIGHT;
         const scale = Math.min(scaleX, scaleY);
 
         this.app.stage.scale.set(scale);
-        this.app.stage.x = (this.app.screen.width - this.CANVAS_WIDTH * scale) / 2;
-        this.app.stage.y = (this.app.screen.height - CANVAS_HEIGHT * scale) / 2;
+        this.app.stage.x = (w - this.CANVAS_WIDTH * scale) / 2;
+        this.app.stage.y = (h - CANVAS_HEIGHT * scale) / 2;
     }
 
     destroy() {
