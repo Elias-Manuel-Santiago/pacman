@@ -14,6 +14,7 @@ export class UI {
         // Mapeo de Overlays HTML
         this.htmlGameOverOverlay = document.getElementById('game-over-overlay');
         this.htmlWinOverlay = document.getElementById('win-overlay');
+        this.htmlPauseOverlay = document.getElementById('pause-overlay');
 
         this.gameOverScoreText = document.getElementById('game-over-score');
         this.winScoreText = document.getElementById('win-score');
@@ -168,9 +169,19 @@ export class UI {
         container.appendChild(btn);
     }
 
+    // Pausa
+    showPause() {
+        this.htmlPauseOverlay.classList.remove('hidden');
+    }
+
+    hidePause() {
+        this.htmlPauseOverlay.classList.add('hidden');
+    }
+
     destroy() {
         this.coverContainer.destroy({ children: true });
         this.htmlGameOverOverlay.classList.add('hidden');
         this.htmlWinOverlay.classList.add('hidden');
+        this.htmlPauseOverlay.classList.add('hidden');
     }
 }
