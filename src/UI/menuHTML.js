@@ -31,18 +31,6 @@ export class MenuHTML {
         const formSingle = document.getElementById('form-singleplayer');
         const formVersus = document.getElementById('form-versus');
 
-        // Toggle del Tema Día/Noche (Se mantiene igual)
-        themeToggle.addEventListener('click', () => {
-            const body = document.body;
-            if (body.classList.contains('theme-night')) {
-                body.classList.remove('theme-night');
-                body.classList.add('theme-day');
-            } else {
-                body.classList.remove('theme-day');
-                body.classList.add('theme-night');
-            }
-        });
-
         // Handler común para cambiar la pantalla e iniciar el juego
         const startGameTransition = (gameData) => {
             startScreen.classList.add('hidden');
